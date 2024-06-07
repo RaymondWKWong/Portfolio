@@ -13,6 +13,9 @@ function AchievementsCard() {
         <blockquote className="blockquote mb-0">
           <ul>
             <li className="about-activity">
+              <VscDebugBreakpointData /> IMC - Prosperity Trading | Ranked Top 5% Global | 48th UK <FaMedal />
+            </li>
+            <li className="about-activity">
               <VscDebugBreakpointData /> OrionHack | Awarded 2nd Place <FaMedal />
             </li>
             <li className="about-activity">
@@ -22,7 +25,7 @@ function AchievementsCard() {
               <VscDebugBreakpointData /> First & Second Year Dean's List Awards <FaMedal />
             </li>
             <li className="about-activity">
-              <VscDebugBreakpointData /> Algorithmic Trading Society | Committee
+              <VscDebugBreakpointData /> Algorithmic Trading Society | Head of Corporate Relations
             </li>
             <li className="about-activity">
               <VscDebugBreakpointData /> Imperial College Investment Society | Junior Analyst
@@ -34,13 +37,16 @@ function AchievementsCard() {
               <VscDebugBreakpointDataUnverified /> QuantMinds 2023
               <br />
               &nbsp; &nbsp; &nbsp;
+              <VscDebugBreakpointDataUnverified /> TMS 2024
+              <br />
+              &nbsp; &nbsp; &nbsp;
               <VscDebugBreakpointDataUnverified /> AMMS 2023
               <br />
               &nbsp; &nbsp; &nbsp;
               <VscDebugBreakpointDataUnverified /> EMMC 2022
               <br />
               &nbsp; &nbsp; &nbsp;
-              <VscDebugBreakpointDataUnverified /> New Frontiers in Materials Design
+              <VscDebugBreakpointDataUnverified /> New Frontiers in Materials Design 2022
             </li>
           </ul>
         </blockquote>

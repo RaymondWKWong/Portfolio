@@ -2,6 +2,7 @@ import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import ProjectCard from "./ProjectCards";
 import Particle from "../Particle";
+import IMC from "../../Assets/Projects/IMC.png";
 import MakaStory from "../../Assets/Projects/makastory.png";
 import SignBridge from "../../Assets/Projects/signbridge.png";
 import OrionHack from "../../Assets/Projects/orionhack.png";
@@ -20,6 +21,17 @@ function Projects() {
           Here are a few projects I've worked on recently.
         </p>
         <Row style={{ justifyContent: "center", paddingBottom: "10px" }}>
+        <Col md={4} className="project-card">
+            <ProjectCard 
+              imgPath={IMC }
+              isBlog={false}
+              title="IMC Prosperity Trading"
+              description="IMC’s 15-day Algorithmic Trading hackathon competing against 13,000+ participants. Algorithmic trading strategies implemented includes market making by estimating fair value of commodities and ETF, statistical
+              arbitrage, applying Black-Scholes model for option pricing and delta hedging strategies."
+              webLink="https://www.linkedin.com/feed/update/urn:li:activity:7192945639297564672/"
+            />
+          </Col>
+
           <Col md={4} className="project-card">
             <ProjectCard
               imgPath={MakaStory}
@@ -27,17 +39,6 @@ function Projects() {
               title="MakaStory"
               description="Story generator web app for children with different impairments and mobility limitations, supporting text inputs, speech inputs and sign language inputs with a tailored machine learning model."
               ghLink="https://github.com/ruihanjc/CodeToGive"
-            />
-          </Col>
-
-          <Col md={4} className="project-card">
-            <ProjectCard 
-              imgPath={Gold }
-              isBlog={false}
-              title="Stock Forecasting with News Buy Sell Recommendation"
-              description="Web scraped historical financial news and stock prices of S&P500 companies to train LSTM and ARIMA models to predict closing price of a given stock. Constructed neural network to predict whether to buy, sell or hold a stock based on news."
-              ghLink="https://github.com/RaymondWKWong/AlgoTrading-ML-Workshop"
-              demoLink="https://github.com/RaymondWKWong/AlgoTrading-ML-Workshop"
             />
           </Col>
 
@@ -58,6 +59,7 @@ function Projects() {
               title="Gold Price Prediction Workshop for AlgoTrading"
               description="Forecasting gold price based on the daily percentage change in the closing prices of other precious metals - Machine learning workshop tutorial for Imperial College London's Algorithmic Trading Society."
               ghLink="https://github.com/RaymondWKWong/AlgoTrading-ML-Workshop"
+              demoLink="https://github.com/RaymondWKWong/AlgoTrading-ML-Workshop"
             />
           </Col>
 

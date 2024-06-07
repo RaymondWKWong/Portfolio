@@ -22,7 +22,10 @@ function Type() {
         .pauseFor(2500)
         .deleteAll(10)
 
+        typewriter.typeString('IMC Prosperity Trading Talent | Ranked Top 5% Global | 48th UK <FaMedal /> <br />')
+        typewriter.typeString('<br />')
         typewriter.typeString('OrionHack | Awarded 2nd Place <FaMedal /> <br />')
+        typewriter.typeString('<br />')
         typewriter.typeString('Morgan Stanley - Code to Give | Ranked Top 10 <FaMedal />')
         .pauseFor(2500)
         .deleteAll(10)
