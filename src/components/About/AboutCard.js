@@ -1,6 +1,5 @@
 import React from "react";
 import Card from "react-bootstrap/Card";
-import { ImPointRight } from "react-icons/im";
 import { VscDebugBreakpointData } from "react-icons/vsc";
 
 function AboutCard() {
@@ -9,25 +8,29 @@ function AboutCard() {
       <Card.Body>
         <blockquote className="blockquote mb-0">
           <p style={{ textAlign: "justify" }}>
-            Hi Everyone, I am <span className="purple">Raymond Wong </span>
-            , a PhD student and Graduate Teaching Assistant for <span className="purple">Python</span> and 
-            <span className="purple"> Maths</span> at Imperial College London.
+            Hi, I'm <span className="purple">Raymond Wong</span> — a PhD
+            student at <span className="purple">Imperial College London</span>,
+            researching <span className="purple">Machine Learning</span> and
+            <span className="purple"> Data Analytics</span> for alloy design in
+            metal 3D printing.
             <br />
             <br />
-            My PhD research is focused on using <span className="purple">Machine Learning</span> and 
-            <span className="purple"> Data Analytics</span> to design new alloys for 3D printing.
+            <strong>Experience</strong>
             <br />
-            I have an MSc in <span className="purple">Engineering Mathematics</span> from University of Bristol 
-            and BEng in <span className="purple">Mechanical Engineering</span>, where I completed projects such as:
-            <ul>
-            <li className="about-activity">
-              <VscDebugBreakpointData /> Multi-Group Monte Carlo simulation to estimate parking spaces
-            </li>
-            <li className="about-activity">
-              <VscDebugBreakpointData /> Analysing sources of errors for ocean current predictions to minimise the 
-              risks of impacts during oil spills
-            </li>
-          </ul>
+            <VscDebugBreakpointData /> Machine Learning | R&D Specialist @ <span className="purple">01C</span> (Oct 2025 - Present)
+            <br />
+            <VscDebugBreakpointData /> Quantitative Researcher @ <span className="purple">Daler Trading</span> (May - Oct 2025)
+            <br />
+            <VscDebugBreakpointData /> Graduate Teaching Assistant @ <span className="purple">Imperial College London</span> (Oct 2022 - Oct 2025)
+            <br />
+            <br />
+            <strong>Education</strong>
+            <br />
+            <VscDebugBreakpointData /> PhD <span className="purple">Applied Machine Learning</span>, Imperial College London
+            <br />
+            <VscDebugBreakpointData /> MSc <span className="purple">Engineering Mathematics</span>, University of Bristol
+            <br />
+            <VscDebugBreakpointData /> BEng <span className="purple">Mechanical Engineering</span>, University of Bristol
           </p>
         </blockquote>
       </Card.Body>
