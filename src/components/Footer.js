@@ -29,28 +29,27 @@ function Footer() {
                 target="_blank" 
                 rel="noopener noreferrer"
               >
-                <AiFillGithub />
+                <AiFillGithub size={22} />
               </a>
             </li>
             <li className="social-icons">
               <a
                 href="https://twitter.com/RaymondWongPhD"
                 style={{ color: "white" }}
-                target="_blank" 
+                target="_blank"
                 rel="noopener noreferrer"
               >
-                {/* <AiOutlineTwitter /> */}
-                <FaXTwitter />
+                <FaXTwitter size={22} />
               </a>
             </li>
             <li className="social-icons">
               <a
                 href="https://linkedin.com/in/raymond-wong-a226a8154"
                 style={{ color: "white" }}
-                target="_blank" 
+                target="_blank"
                 rel="noopener noreferrer"
               >
-                <FaLinkedinIn />
+                <FaLinkedinIn size={22} />
               </a>
             </li>
             {/* <li className="social-icons">

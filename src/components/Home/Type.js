@@ -18,11 +18,15 @@ function Type() {
 
       onInit={(typewriter) => {
         typewriter.typeString('PhD Student <br />')
-        typewriter.typeString('Imperial College London')
+        typewriter.typeString('Imperial College London <br />')
+        typewriter.typeString('<br />')
+        typewriter.typeString('Best Research Poster | International Symposium on Advances in Metallurgy <FaMedal /> <br />')
+        typewriter.typeString('<br />')
+        typewriter.typeString('Teaching Assistant of the Year | Imperial College London <FaMedal />')
         .pauseFor(2500)
         .deleteAll(10)
 
-        typewriter.typeString('IMC Prosperity Trading Talent | Ranked Top 5% Global | 48th UK <FaMedal /> <br />')
+        typewriter.typeString('IMC Prosperity Trading Talent | Ranked 107th Global | 9th UK <FaMedal /> <br />')
         typewriter.typeString('<br />')
         typewriter.typeString('OrionHack | Awarded 2nd Place <FaMedal /> <br />')
         typewriter.typeString('<br />')

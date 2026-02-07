@@ -4,11 +4,13 @@ import 'react-slideshow-image/dist/styles.css';
 import ConferenceImg from "../../Assets/conference2.jpg";
 import QuantMinds from "../../Assets/quantminds conference.jpeg";
 import GroupImg from "../../Assets/group photo.jpg";
+import QuantMindsHackathon from "../../Assets/QuantMinds_Hackathon_03.jpg";
 
 const AboutSlideshow = () => {
   const images = [
     ConferenceImg,
     QuantMinds,
+    QuantMindsHackathon,
     GroupImg,
   ];
 

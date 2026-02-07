@@ -57,7 +57,7 @@ function Home() {
                   src={homeLogo}
                   alt="home pic"
                   className="img-fluid"
-                  style={{ maxHeight: "450px", width: "100%" }}
+                  style={{ maxHeight: "450px", objectFit: "contain" }}
                 />
               </div>
 
@@ -66,13 +66,13 @@ function Home() {
               </div>
             </Col>
 
-            <Col md={6} className="d-none d-md-block" style={{ paddingBottom: 20 }}>
+            <Col md={6} className="d-none d-md-block" style={{ paddingBottom: 20, paddingLeft: 150 }}>
               {/* This content will be displayed on screens md (medium) and larger */}
               <img
                 src={homeLogo}
                 alt="home pic"
                 className="img-fluid"
-                style={{ maxHeight: "450px", width: "100%" }}
+                style={{ maxHeight: "450px", objectFit: "contain" }}
               />
             </Col>
           </Row>
