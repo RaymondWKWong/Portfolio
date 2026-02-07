@@ -8,6 +8,7 @@ import AchievementsCard from "./AchievementsCard";
 import AboutSlideshow from "./Slideshow_About"
 import ProjectSlideshow from "./Slideshow_Projects"
 import Toolstack from "./Toolstack";
+import NewsCard from "./NewsCard";
 
 function About() {
   return (
@@ -71,9 +72,10 @@ function About() {
         <Techstack />
 
         <h1 className="project-heading">
-          <strong className="purple">Fill with slideshow</strong> Fill here
+          In The <strong className="purple">News</strong>
         </h1>
-        {/* <Toolstack /> */}
+
+        <NewsCard />
 
         <Github />
       </Container>

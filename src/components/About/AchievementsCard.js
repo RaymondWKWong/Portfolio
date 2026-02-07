@@ -43,10 +43,10 @@ function AchievementsCard() {
               <VscDebugBreakpointData /> Conferences:
               <br />
               &nbsp; &nbsp; &nbsp;
-              <VscDebugBreakpointDataUnverified /> QuantMinds 2023
+              <VscDebugBreakpointDataUnverified /> QuantMinds 2024
               <br />
               &nbsp; &nbsp; &nbsp;
-              <VscDebugBreakpointDataUnverified /> QuantMinds 2024
+              <VscDebugBreakpointDataUnverified /> QuantMinds 2023
               <br />
               &nbsp; &nbsp; &nbsp;
               <VscDebugBreakpointDataUnverified /> International Symposium on Advances in Metallurgy

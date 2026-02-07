@@ -603,6 +603,66 @@ button:focus {
     padding-top: 0 !important;
   }
 }
+
+/* --------- */
+/* News Cards */
+/* --------- */
+.news-card-view {
+  border: none !important;
+  box-shadow: 0 4px 5px 3px rgba(85, 139, 217, 0.3) !important;
+  color: #333 !important;
+  background-color: #fff !important;
+  opacity: 1 !important;
+  transition: all 0.4s ease 0s !important;
+  overflow: hidden;
+  border-radius: 10px !important;
+  margin: 20px auto;
+  max-width: 900px;
+}
+
+.news-card-view:hover {
+  transform: scale(1.02) !important;
+  box-shadow: 0 4px 8px 5px rgba(85, 139, 217, 0.4) !important;
+}
+
+.news-img-wrapper {
+  overflow: hidden;
+}
+
+.news-img {
+  max-height: 350px;
+  width: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.news-source {
+  font-size: 0.85em;
+  color: #888;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.news-title {
+  font-size: 1.15em !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  line-height: 1.4;
+  margin-bottom: 12px !important;
+}
+
+.news-link {
+  color: #1463F3;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+@media (max-width: 767px) {
+  .news-img-wrapper {
+    max-height: none;
+  }
+}
 /* --------- */
 /* Resume */
 /* --------- */
