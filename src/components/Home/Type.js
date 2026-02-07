@@ -30,7 +30,9 @@ function Type() {
         typewriter.typeString('<br />')
         typewriter.typeString('OrionHack | Awarded 2nd Place <FaMedal /> <br />')
         typewriter.typeString('<br />')
-        typewriter.typeString('Morgan Stanley - Code to Give | Ranked Top 10 <FaMedal />')
+        typewriter.typeString('Morgan Stanley - Code to Give | Ranked Top 10 <FaMedal /> <br />')
+        typewriter.typeString('<br />')
+        typewriter.typeString('10 Downing Street - Rewire the State Hackathon <FaMedal />')
         .pauseFor(2500)
         .deleteAll(10)
 

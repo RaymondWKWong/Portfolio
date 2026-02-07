@@ -22,6 +22,9 @@ function AchievementsCard() {
               <VscDebugBreakpointData /> Morgan Stanley - Code to Give | Ranked Top 10 <FaMedal />
             </li>
             <li className="about-activity">
+              <VscDebugBreakpointData /> 10 Downing Street - Rewire the State Hackathon <FaMedal />
+            </li>
+            <li className="about-activity">
               <VscDebugBreakpointData /> Best Research Poster | International Symposium on Advances in Metallurgy <FaMedal />
             </li>
             <li className="about-activity">
