@@ -254,6 +254,15 @@ button:focus {
   padding-top: 0px !important;
 }
 
+.home-avatar {
+  filter: drop-shadow(0 10px 30px rgba(20, 99, 243, 0.5));
+  transition: filter 0.3s ease;
+}
+
+.home-avatar:hover {
+  filter: drop-shadow(0 15px 40px rgba(20, 99, 243, 0.7));
+}
+
 .home-section {
   position: relative;
   z-index: -1;

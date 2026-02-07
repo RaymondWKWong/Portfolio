@@ -56,7 +56,7 @@ function Home() {
                 <img
                   src={homeLogo}
                   alt="home pic"
-                  className="img-fluid"
+                  className="img-fluid home-avatar"
                   style={{ maxHeight: "450px", objectFit: "contain" }}
                 />
               </div>
@@ -71,7 +71,7 @@ function Home() {
               <img
                 src={homeLogo}
                 alt="home pic"
-                className="img-fluid"
+                className="img-fluid home-avatar"
                 style={{ maxHeight: "450px", objectFit: "contain" }}
               />
             </Col>
