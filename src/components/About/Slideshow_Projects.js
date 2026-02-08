@@ -16,7 +16,7 @@ const ProjectSlideshow = () => {
 //       <Zoom scale={1.4} indicators={true} duration={2000} arrows={false} canSwipe={true}>
 //           {images.map((each, index) => (
 //                 <div key={index} style={{ width: "100%", height: "300px", overflow: "hidden" }}>
-//                 <img style={{ objectFit: "cover", width: "100%", height: "100%" }} alt="Slide Image" src={each} />
+//                 <img style={{ objectFit: "cover", width: "100%", height: "100%" }} alt="Slide" src={each} />
 //             </div>
 //           ))}
 //       </Zoom>
@@ -28,7 +28,7 @@ const ProjectSlideshow = () => {
       <Zoom scale={1.4} indicators={true} duration={2000} arrows={false} canSwipe={true}>
           {images.map((each, index) => (
               <div key={index} style={{ width: "100%" }}>
-                  <img style={{ objectFit: "cover", width: "100%" }} alt="Slide Image" src={each} />
+                  <img style={{ objectFit: "cover", width: "100%" }} alt="Slide" src={each} />
               </div>
           ))}
       </Zoom>

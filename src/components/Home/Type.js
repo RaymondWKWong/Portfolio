@@ -1,13 +1,6 @@
 import React from "react";
 import Typewriter from "typewriter-effect";
 
-// https://stackoverflow.com/questions/54875497/how-do-you-increase-the-typewriter-effect-speed-and-increase-cursor-size
-const typewriter = new Typewriter({
-  loop: true,
-  delay: 1000,
-  cursorClassName: 'cursorSize', // custom class name
-});
-
 function Type() {
   return (
     <Typewriter
