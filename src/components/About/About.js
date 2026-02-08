@@ -5,7 +5,7 @@ import Github from "./Github";
 import Techstack from "./Techstack";
 import Aboutcard from "./AboutCard";
 import ConferencesCard from "./ConferencesCard";
-import PublicationsCard from "./PublicationsCard";
+
 import AboutSlideshow from "./Slideshow_About"
 import NewsCard from "./NewsCard";
 
@@ -40,22 +40,6 @@ function About() {
             style={{ paddingTop: "10px", paddingBottom: "50px" }}
           >
             <AboutSlideshow />
-          </Col>
-        </Row>
-
-        <Row style={{ justifyContent: "center", padding: "10px" }}>
-          <Col
-            md={8}
-            style={{
-              justifyContent: "center",
-              paddingTop: "30px",
-              paddingBottom: "20px",
-            }}
-          >
-            <h1 style={{ fontSize: "2.1em", paddingBottom: "20px" }}>
-              <strong className="purple"> PUBLICATIONS </strong>
-            </h1>
-            <PublicationsCard />
           </Col>
         </Row>
 

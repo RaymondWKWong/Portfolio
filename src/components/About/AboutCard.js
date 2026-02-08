@@ -1,8 +1,8 @@
 import React from "react";
 import Card from "react-bootstrap/Card";
-import { VscDebugBreakpointData } from "react-icons/vsc";
-import { FaMedal } from "react-icons/fa6";
+
 import TimelineEntry from "./TimelineEntry";
+import PublicationsCard from "./PublicationsCard";
 import Logo01C from "../../Assets/Logos/01C_Logo.jpg";
 import LogoDaler from "../../Assets/Logos/DalerTrading_Logo.jpg";
 import LogoImperial from "../../Assets/Logos/Imperial_Logo.jpg";
@@ -14,6 +14,8 @@ import Logo10DS from "../../Assets/Logos/10DS_Logo.jpg";
 import LogoAnthropic from "../../Assets/Logos/Anthropic_Logo.jpg";
 import LogoManGroup from "../../Assets/Logos/ManGroup_Logo.jpg";
 import LogoQuantMinds from "../../Assets/Logos/QuantMinds_Logo.jpg";
+import LogoAlgosoc from "../../Assets/Logos/Imperia_Algosoc_Logo.jpg";
+import LogoQTC from "../../Assets/Logos/Imperial_QTC_Logo.jpg";
 
 const competitionsData = [
   {
@@ -81,10 +83,23 @@ const experienceData = [
     dates: "May - Oct 2025",
   },
   {
+    logo: LogoAlgosoc,
+    title: "Head of Corporate Relations",
+    organization: "Algorithmic Trading Society",
+    dates: "Oct 2023 - Oct 2025",
+  },
+  {
+    logo: LogoQTC,
+    title: "Analyst",
+    organization: "Imperial College Investment Society",
+    dates: "Oct 2023 - Oct 2025",
+  },
+  {
     logo: LogoImperial,
     title: "Graduate Teaching Assistant",
     organization: "Imperial College London",
     dates: "Oct 2022 - Oct 2025",
+    badge: "Awarded Teaching Assistant of the Year",
   },
 ];
 
@@ -93,6 +108,7 @@ const educationData = [
     logo: LogoImperial,
     title: "PhD Applied Machine Learning",
     organization: "Imperial College London",
+    badge: "Awarded Best Research Poster | International Symposium on Advances in Metallurgy",
   },
   {
     logo: LogoUoB,
@@ -103,6 +119,7 @@ const educationData = [
     logo: LogoUoB,
     title: "BEng Mechanical Engineering",
     organization: "University of Bristol",
+    badge: "Dean's List Award",
   },
 ];
 
@@ -145,6 +162,7 @@ function AboutCard() {
                 primaryText={entry.title}
                 secondaryText={entry.organization}
                 dates={entry.dates}
+                badge={entry.badge}
               />
             ))}
           </div>
@@ -158,30 +176,13 @@ function AboutCard() {
                 primaryText={entry.title}
                 secondaryText={entry.organization}
                 dates={entry.dates}
+                badge={entry.badge}
               />
             ))}
           </div>
 
-          <div className="about-section-box">
-            <p className="about-section-box-title"><strong>Awards & Activities</strong></p>
-            <ul style={{ paddingLeft: "66px" }}>
-              <li className="about-activity">
-                <FaMedal /> Best Research Poster | International Symposium on Advances in Metallurgy
-              </li>
-              <li className="about-activity">
-                <FaMedal /> Teaching Assistant of the Year | Imperial College London
-              </li>
-              <li className="about-activity">
-                <FaMedal /> First & Second Year Dean's List Awards
-              </li>
-              <li className="about-activity">
-                <VscDebugBreakpointData /> Algorithmic Trading Society | Head of Corporate Relations
-              </li>
-              <li className="about-activity">
-                <VscDebugBreakpointData /> Imperial College Investment Society | Analyst
-              </li>
-            </ul>
-          </div>
+          <p className="about-section-box-title"><strong>Publications</strong></p>
+          <PublicationsCard />
         </blockquote>
       </Card.Body>
     </Card>
