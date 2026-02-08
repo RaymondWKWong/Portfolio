@@ -39,30 +39,6 @@ function AchievementsCard() {
             <li className="about-activity">
               <VscDebugBreakpointData /> Imperial College Investment Society | Junior Analyst
             </li>
-            <li className="about-activity">
-              <VscDebugBreakpointData /> Conferences:
-              <br />
-              &nbsp; &nbsp; &nbsp;
-              <VscDebugBreakpointDataUnverified /> QuantMinds 2024
-              <br />
-              &nbsp; &nbsp; &nbsp;
-              <VscDebugBreakpointDataUnverified /> QuantMinds 2023
-              <br />
-              &nbsp; &nbsp; &nbsp;
-              <VscDebugBreakpointDataUnverified /> International Symposium on Advances in Metallurgy
-              <br />
-              &nbsp; &nbsp; &nbsp;
-              <VscDebugBreakpointDataUnverified /> TMS 2024
-              <br />
-              &nbsp; &nbsp; &nbsp;
-              <VscDebugBreakpointDataUnverified /> AMMS 2023
-              <br />
-              &nbsp; &nbsp; &nbsp;
-              <VscDebugBreakpointDataUnverified /> EMMC 2022
-              <br />
-              &nbsp; &nbsp; &nbsp;
-              <VscDebugBreakpointDataUnverified /> New Frontiers in Materials Design 2022
-            </li>
           </ul>
         </blockquote>
       </Card.Body>

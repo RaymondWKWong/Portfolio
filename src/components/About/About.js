@@ -5,6 +5,7 @@ import Github from "./Github";
 import Techstack from "./Techstack";
 import Aboutcard from "./AboutCard";
 import AchievementsCard from "./AchievementsCard";
+import ConferencesCard from "./ConferencesCard";
 import AboutSlideshow from "./Slideshow_About"
 import ProjectSlideshow from "./Slideshow_Projects"
 import Toolstack from "./Toolstack";
@@ -15,13 +16,19 @@ function About() {
     <Container fluid className="about-section">
       <Particle />
       <Container>
+
+        <h1 className="project-heading">
+          In The <strong className="purple">News</strong>
+        </h1>
+        <NewsCard />
+
         <Row style={{ justifyContent: "center", padding: "10px" }}>
           <Col
-            md={7}
+            md={12}
             style={{
               justifyContent: "center",
               paddingTop: "30px",
-              paddingBottom: "50px",
+              paddingBottom: "20px",
             }}
           >
             <h1 style={{ fontSize: "2.1em", paddingBottom: "20px" }}>
@@ -29,17 +36,16 @@ function About() {
             </h1>
             <Aboutcard />
           </Col>
-          
+
           <Col
-            md={5}
-            style={{ paddingTop: "120px", paddingBottom: "50px" }}
-            className="about-img"
+            md={8}
+            style={{ paddingTop: "10px", paddingBottom: "50px" }}
           >
-            {/* <img src={laptopImg} alt="about" className="img-fluid" /> */}
             <AboutSlideshow />
           </Col>
+        </Row>
 
-
+        <Row style={{ justifyContent: "center", padding: "10px" }}>
           <Col
             md={7}
             style={{
@@ -53,29 +59,30 @@ function About() {
             </h1>
             <AchievementsCard />
           </Col>
-          
+
           <Col
             md={5}
             style={{ paddingTop: "120px", paddingBottom: "50px" }}
             className="about-img"
           >
-            {/* <img src={images[currentImageIndex]} alt="about" className="img-fluid" /> */}
             <ProjectSlideshow />
           </Col>
-
-
         </Row>
+
+        <h1 className="project-heading">
+          <strong className="purple">Conferences</strong>
+        </h1>
+        <Row style={{ justifyContent: "center" }}>
+          <Col md={8}>
+            <ConferencesCard />
+          </Col>
+        </Row>
+
         <h1 className="project-heading">
           Professional <strong className="purple">Skillset </strong>
         </h1>
 
         <Techstack />
-
-        <h1 className="project-heading">
-          In The <strong className="purple">News</strong>
-        </h1>
-
-        <NewsCard />
 
         <Github />
       </Container>

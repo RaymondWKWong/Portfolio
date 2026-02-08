@@ -616,8 +616,8 @@ button:focus {
   transition: all 0.4s ease 0s !important;
   overflow: hidden;
   border-radius: 10px !important;
-  margin: 20px auto;
-  max-width: 900px;
+  margin: 0;
+  height: 100%;
 }
 
 .news-card-view:hover {
@@ -630,7 +630,7 @@ button:focus {
 }
 
 .news-img {
-  max-height: 350px;
+  max-height: 250px;
   width: auto;
   display: block;
   margin: 0 auto;

@@ -23,44 +23,39 @@ const newsItems = [
 
 function NewsCard() {
   return (
-    <>
+    <Row style={{ justifyContent: "center" }}>
       {newsItems.map((item, index) => (
-        <a
-          key={index}
-          href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ textDecoration: "none" }}
-        >
-          <Card className="news-card-view">
-            <Row className="g-0">
-              <Col md={5}>
-                <div className="news-img-wrapper">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="news-img"
-                  />
+        <Col md={6} key={index} style={{ padding: "15px" }}>
+          <a
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none" }}
+          >
+            <Card className="news-card-view">
+              <div className="news-img-wrapper">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="news-img"
+                />
+              </div>
+              <Card.Body>
+                <div className="news-source">
+                  {item.source} &middot; {item.date}
                 </div>
-              </Col>
-              <Col md={7} className="d-flex align-items-center">
-                <Card.Body>
-                  <div className="news-source">
-                    {item.source} &middot; {item.date}
-                  </div>
-                  <Card.Title className="news-title">
-                    {item.title}
-                  </Card.Title>
-                  <div className="news-link">
-                    Read article <FiExternalLink />
-                  </div>
-                </Card.Body>
-              </Col>
-            </Row>
-          </Card>
-        </a>
+                <Card.Title className="news-title">
+                  {item.title}
+                </Card.Title>
+                <div className="news-link">
+                  Read article <FiExternalLink />
+                </div>
+              </Card.Body>
+            </Card>
+          </a>
+        </Col>
       ))}
-    </>
+    </Row>
   );
 }
 

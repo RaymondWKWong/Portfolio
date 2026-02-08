@@ -13,25 +13,31 @@ function AboutCard() {
             researching <span className="purple">Machine Learning</span> and
             <span className="purple"> Data Analytics</span> for alloy design in
             metal 3D printing.
-            <br />
-            <br />
-            <strong>Experience</strong>
-            <br />
-            <VscDebugBreakpointData /> Machine Learning | R&D Specialist @ <span className="purple">01C</span> (Oct 2025 - Present)
-            <br />
-            <VscDebugBreakpointData /> Quantitative Researcher @ <span className="purple">Daler Trading</span> (May - Oct 2025)
-            <br />
-            <VscDebugBreakpointData /> Graduate Teaching Assistant @ <span className="purple">Imperial College London</span> (Oct 2022 - Oct 2025)
-            <br />
-            <br />
-            <strong>Education</strong>
-            <br />
-            <VscDebugBreakpointData /> PhD <span className="purple">Applied Machine Learning</span>, Imperial College London
-            <br />
-            <VscDebugBreakpointData /> MSc <span className="purple">Engineering Mathematics</span>, University of Bristol
-            <br />
-            <VscDebugBreakpointData /> BEng <span className="purple">Mechanical Engineering</span>, University of Bristol
           </p>
+          <p style={{ marginBottom: "5px" }}><strong>Experience</strong></p>
+          <ul>
+            <li className="about-activity">
+              <VscDebugBreakpointData /> Machine Learning | R&D Specialist @ <span className="purple">01C</span> (Oct 2025 - Present)
+            </li>
+            <li className="about-activity">
+              <VscDebugBreakpointData /> Quantitative Researcher @ <span className="purple">Daler Trading</span> (May - Oct 2025)
+            </li>
+            <li className="about-activity">
+              <VscDebugBreakpointData /> Graduate Teaching Assistant @ <span className="purple">Imperial College London</span> (Oct 2022 - Oct 2025)
+            </li>
+          </ul>
+          <p style={{ marginBottom: "5px" }}><strong>Education</strong></p>
+          <ul>
+            <li className="about-activity">
+              <VscDebugBreakpointData /> PhD <span className="purple">Applied Machine Learning</span>, Imperial College London
+            </li>
+            <li className="about-activity">
+              <VscDebugBreakpointData /> MSc <span className="purple">Engineering Mathematics</span>, University of Bristol
+            </li>
+            <li className="about-activity">
+              <VscDebugBreakpointData /> BEng <span className="purple">Mechanical Engineering</span>, University of Bristol
+            </li>
+          </ul>
         </blockquote>
       </Card.Body>
     </Card>
