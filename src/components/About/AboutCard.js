@@ -8,7 +8,7 @@ function AboutCard() {
       <Card.Body>
         <blockquote className="blockquote mb-0">
           <p style={{ textAlign: "justify" }}>
-            Hi, I'm <span className="purple">Raymond Wong</span> — a PhD
+            I'm <span className="purple">Raymond Wong</span> — a PhD
             student at <span className="purple">Imperial College London</span>,
             researching <span className="purple">Machine Learning</span> and
             <span className="purple"> Data Analytics</span> for alloy design in

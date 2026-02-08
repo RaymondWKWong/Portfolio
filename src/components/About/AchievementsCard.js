@@ -37,7 +37,7 @@ function AchievementsCard() {
               <VscDebugBreakpointData /> Algorithmic Trading Society | Head of Corporate Relations
             </li>
             <li className="about-activity">
-              <VscDebugBreakpointData /> Imperial College Investment Society | Junior Analyst
+              <VscDebugBreakpointData /> Imperial College Investment Society | Analyst
             </li>
           </ul>
         </blockquote>
