@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import Particle from "../Particle";
 import Github from "./Github";
@@ -8,7 +8,6 @@ import AchievementsCard from "./AchievementsCard";
 import ConferencesCard from "./ConferencesCard";
 import AboutSlideshow from "./Slideshow_About"
 import ProjectSlideshow from "./Slideshow_Projects"
-import Toolstack from "./Toolstack";
 import NewsCard from "./NewsCard";
 
 function About() {

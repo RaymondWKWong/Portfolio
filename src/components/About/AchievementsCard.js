@@ -1,10 +1,7 @@
 import React from "react";
 import Card from "react-bootstrap/Card";
-import { ImPointRight } from "react-icons/im";
 import { VscDebugBreakpointData } from "react-icons/vsc";
-import { CiMedal } from "react-icons/ci";
 import { FaMedal } from "react-icons/fa6";
-import { VscDebugBreakpointDataUnverified } from "react-icons/vsc";
 
 function AchievementsCard() {
   return (
