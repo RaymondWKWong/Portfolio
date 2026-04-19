@@ -10,8 +10,7 @@ function Type() {
       }}
 
       onInit={(typewriter) => {
-        typewriter.typeString('PhD Student <br />')
-        typewriter.typeString('Imperial College London <br />')
+        typewriter.typeString('PhD @ Imperial College London <br />')
         typewriter.typeString('<br />')
         typewriter.typeString('Best Research Poster | International Symposium on Advances in Metallurgy <FaMedal /> <br />')
         typewriter.typeString('<br />')
