@@ -1,0 +1,48 @@
+:root {
+  --paper: #ffffff;
+  --paper-2: #f7f7f8;
+  --paper-3: #fafafb;
+  --ink: #0a0a0b;
+  --ink-soft: #1f1f23;
+  --muted: #6e6e76;
+  --muted-strong: #4a4a52;
+  --rule: #ebebef;
+  --rule-strong: #d4d4dc;
+  --accent: #0a0a0b;
+  --accent-soft: rgba(10, 10, 11, 0.06);
+  --highlight: #ededf2;
+
+  --serif: "Instrument Serif", "Times New Roman", Georgia, serif;
+  --sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+    Arial, sans-serif;
+  --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --step--1: clamp(0.78rem, 0.76rem + 0.1vw, 0.85rem);
+  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  --step-1: clamp(1.125rem, 1.06rem + 0.3vw, 1.25rem);
+  --step-2: clamp(1.35rem, 1.2rem + 0.6vw, 1.6rem);
+  --step-3: clamp(1.65rem, 1.4rem + 1vw, 2rem);
+  --step-4: clamp(2.1rem, 1.7rem + 1.6vw, 2.75rem);
+  --step-5: clamp(2.8rem, 2.1rem + 2.5vw, 3.75rem);
+  --step-6: clamp(3.6rem, 2.6rem + 4vw, 5.25rem);
+  --step-7: clamp(4.5rem, 3rem + 6vw, 7.5rem);
+  --step-8: clamp(5.5rem, 3.4rem + 8.5vw, 9.5rem);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 72px;
+  --space-9: 112px;
+  --space-10: 160px;
+
+  --measure: 38ch;
+  --container: min(1240px, 100% - 48px);
+  --container-tight: min(880px, 100% - 48px);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
