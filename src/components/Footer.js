@@ -1,54 +1,55 @@
 import React from "react";
-import { Container, Row, Col } from "react-bootstrap";
 import { AiFillGithub } from "react-icons/ai";
 import { FaLinkedinIn } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import styles from "./Footer.module.css";
 
 function Footer() {
+  const year = new Date().getFullYear();
   return (
-    <Container fluid className="footer">
-      <Row>
-        <Col md="4" className="footer-copywright">
-          <h3>Designed by Raymond Wong</h3>
-        </Col>
-        <Col md="4" className="footer-copywright">
-        </Col>
-        <Col md="4" className="footer-body">
-          <ul className="footer-icons">
-            <li className="social-icons">
-              <a
-                href="https://github.com/RaymondWKWong"
-                style={{ color: "white" }}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <AiFillGithub size={22} />
-              </a>
-            </li>
-            <li className="social-icons">
-              <a
-                href="https://twitter.com/RaymondWongPhD"
-                style={{ color: "white" }}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FaXTwitter size={22} />
-              </a>
-            </li>
-            <li className="social-icons">
-              <a
-                href="https://linkedin.com/in/raymond-wong-a226a8154"
-                style={{ color: "white" }}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FaLinkedinIn size={22} />
-              </a>
-            </li>
-          </ul>
-        </Col>
-      </Row>
-    </Container>
+    <footer className={styles.footer}>
+      <div className={styles.inner}>
+        <span className={styles.left}>Raymond Wong · {year}</span>
+        <ul className={styles.socials}>
+          <li>
+            <a
+              href="https://github.com/RaymondWKWong"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.link}
+              aria-label="GitHub"
+            >
+              <AiFillGithub aria-hidden="true" />
+              <span>GitHub</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://linkedin.com/in/raymond-wong-a226a8154"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.link}
+              aria-label="LinkedIn"
+            >
+              <FaLinkedinIn aria-hidden="true" />
+              <span>LinkedIn</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://twitter.com/RaymondWongPhD"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.link}
+              aria-label="X / Twitter"
+            >
+              <FaXTwitter aria-hidden="true" />
+              <span>X / Twitter</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </footer>
   );
 }
 
