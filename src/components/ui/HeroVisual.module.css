@@ -1,0 +1,35 @@
+.wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 480px;
+  margin-inline: auto;
+}
+
+.canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.glow {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    rgba(138, 169, 255, 0.28) 0%,
+    rgba(196, 181, 253, 0.18) 40%,
+    rgba(125, 211, 252, 0.08) 65%,
+    transparent 80%
+  );
+  filter: blur(28px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+@media (max-width: 900px) {
+  .wrap {
+    max-width: 320px;
+    aspect-ratio: 1 / 1;
+  }
+}
