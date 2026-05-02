@@ -20,8 +20,9 @@ function withAlpha(hex, alpha) {
 function FluidBackdrop({
   tint = { a: "#3b82f6", b: "#8b5cf6", c: "#ec4899" },
   intensity = 0.55,
+  bg,
 }) {
-  const background = [
+  const layers = [
     `radial-gradient(95% 80% at 5% 0%, ${tint.a} 0%, ${withAlpha(
       tint.a,
       0
@@ -38,7 +39,11 @@ function FluidBackdrop({
       tint.b,
       0.12
     )} 50%, ${withAlpha(tint.c, 0.18)} 100%)`,
-  ].join(", ");
+  ];
+  if (bg) {
+    layers.push(`linear-gradient(${bg}, ${bg})`);
+  }
+  const background = layers.join(", ");
 
   return (
     <div

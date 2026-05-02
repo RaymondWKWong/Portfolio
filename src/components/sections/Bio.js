@@ -6,7 +6,9 @@ function Bio() {
   return (
     <div className={styles.wrap} id="bio">
       <div className={styles.bioCol}>
-        <Reveal as="p" className={styles.label}>Bio</Reveal>
+        <Reveal as="p" className={styles.label}>
+          Bio
+        </Reveal>
         <Reveal as="p" className={styles.lead}>
           I'm <em>Raymond Wong</em>, PhD in <em>Applied Machine Learning</em>{" "}
           @ Imperial College London.
