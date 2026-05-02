@@ -1,9 +1,7 @@
-import React, { useState, useEffect, Suspense, lazy } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { prefersReducedMotion } from "../../lib/motion";
+import portrait from "../../Assets/profile_no_background.png";
 import styles from "./Hero.module.css";
-
-const HeroVisual = lazy(() => import("../ui/HeroVisual"));
 
 const NAME_EASE = [0.16, 1, 0.3, 1];
 
@@ -46,34 +44,7 @@ function PageCurtain() {
   );
 }
 
-function HeroVisualFallback() {
-  return (
-    <div className={styles.visualFallback} aria-hidden="true">
-      <div className={styles.fallbackOrb} />
-    </div>
-  );
-}
-
-class WebGLBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { failed: false };
-  }
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  componentDidCatch() {
-    /* swallow — fallback renders */
-  }
-  render() {
-    if (this.state.failed) return <HeroVisualFallback />;
-    return this.props.children;
-  }
-}
-
 function Hero() {
-  const reduce = prefersReducedMotion();
-
   return (
     <section className={styles.hero} id="top">
       <PageCurtain />
@@ -129,20 +100,24 @@ function Hero() {
         </div>
 
         <motion.div
-          className={styles.visualCol}
-          initial={{ opacity: 0, scale: 0.94 }}
-          animate={{ opacity: 1, scale: 1 }}
+          className={styles.portraitWrap}
+          initial={{ opacity: 0, scale: 0.94, y: 16 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 1.6, delay: 1.6, ease: NAME_EASE }}
         >
-          {reduce ? (
-            <HeroVisualFallback />
-          ) : (
-            <WebGLBoundary>
-              <Suspense fallback={<HeroVisualFallback />}>
-                <HeroVisual />
-              </Suspense>
-            </WebGLBoundary>
-          )}
+          <motion.div
+            className={styles.portraitOrb}
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <img
+              src={portrait}
+              alt="Raymond Wong"
+              className={styles.portrait}
+              decoding="async"
+              loading="eager"
+            />
+          </motion.div>
         </motion.div>
       </div>
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { motion, useTransform } from "framer-motion";
 import LogoIMC from "../../Assets/Logos/IMC_Logo.jpg";
 import LogoOrionHack from "../../Assets/Logos/OrionHack_Logo.jpg";
@@ -7,6 +7,16 @@ import Logo10DS from "../../Assets/Logos/10DS_Logo.jpg";
 import LogoAnthropic from "../../Assets/Logos/Anthropic_Logo.jpg";
 import LogoManGroup from "../../Assets/Logos/ManGroup_Logo.jpg";
 import LogoQuantMinds from "../../Assets/Logos/QuantMinds_Logo.jpg";
+
+const Earth3DLazy = lazy(() => import("./Earth3D"));
+
+function Earth3D(props) {
+  return (
+    <Suspense fallback={null}>
+      <Earth3DLazy {...props} />
+    </Suspense>
+  );
+}
 
 const STROKE = "var(--ink)";
 const STROKE_SOFT = "var(--muted-strong)";
@@ -1402,6 +1412,6 @@ export const ILLUSTRATIONS = {
   BRISTOL: ImperialVisual,
   IMPERIAL: BristolVisual,
   DALER: DalerVisual,
-  "01C": ZeroOneCVisual,
+  "01C": Earth3D,
   HACKATHONS: HackathonsVisual,
 };
