@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import FluidBackdrop from "../ui/FluidBackdrop";
+import NetworkBackdrop from "../ui/NetworkBackdrop";
 import { journey } from "../../data/journey";
 import { ILLUSTRATIONS } from "./JourneyVisuals";
 import styles from "./Journey.module.css";
@@ -48,7 +49,11 @@ function JourneyScene({ scrollYProgress, start, end, scene, sceneIndex, total })
       style={{ opacity, y }}
       data-scene={scene.serial}
     >
-      <FluidBackdrop tint={scene.tint} intensity={0.42} />
+      {scene.network ? (
+        <NetworkBackdrop bg={scene.bg} accent={scene.accent} />
+      ) : (
+        <FluidBackdrop tint={scene.tint} intensity={0.42} bg={scene.bg} />
+      )}
 
       <motion.div
         className={styles.wordmark}

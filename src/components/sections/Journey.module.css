@@ -517,3 +517,36 @@
     height: auto !important;
   }
 }
+
+/* 01C scene runs on the brand's primarily-black-with-heavenly-gold
+   palette. The FluidBackdrop carries a solid black base, so on-scene
+   text needs to invert to paper / muted-paper. The brand pill, news
+   cards, and pills keep their light backgrounds for contrast pop. */
+.scene[data-scene="01"] .brandName {
+  color: var(--paper);
+}
+.scene[data-scene="01"] .brandSub {
+  color: rgba(255, 255, 255, 0.55);
+}
+.scene[data-scene="01"] .brandDot {
+  color: rgba(255, 255, 255, 0.3);
+}
+.scene[data-scene="01"] .headline {
+  color: var(--paper);
+}
+.scene[data-scene="01"] .body {
+  color: rgba(255, 255, 255, 0.78);
+}
+.scene[data-scene="01"] .pillsLabel {
+  color: rgba(255, 255, 255, 0.55);
+  border-top-color: rgba(255, 255, 255, 0.14);
+}
+.scene[data-scene="01"] .pills {
+  border-top-color: rgba(255, 255, 255, 0.14);
+}
+.scene[data-scene="01"] .wordmark {
+  color: #e7d99f;
+  opacity: 0.18;
+  text-shadow: 0 0 40px rgba(231, 217, 159, 0.35),
+    0 0 80px rgba(231, 217, 159, 0.18);
+}
