@@ -101,19 +101,6 @@ function NetEdge({ progress, x1, y1, x2, y2, start, weight = 0.5 }) {
   );
 }
 
-function ActivationPulse({ progress, fromX, fromY, toX, toY, start }) {
-  const x = useTransform(progress, [start, start + 0.05], [fromX, toX]);
-  const y = useTransform(progress, [start, start + 0.05], [fromY, toY]);
-  const op = useTransform(
-    progress,
-    [start, start + 0.005, start + 0.045, start + 0.05],
-    [0, 1, 1, 0]
-  );
-  return (
-    <motion.circle r="3" fill={IMPERIAL_BLUE} style={{ x, y, opacity: op }} />
-  );
-}
-
 // Firing-neuron loop: each registered edge flashes a small pulse from
 // source to target node at staggered intervals. Continuous, autonomous,
 // no scroll dependency. Mounted only while scene is active so the loop
