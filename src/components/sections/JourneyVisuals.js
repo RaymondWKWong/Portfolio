@@ -114,7 +114,65 @@ function ActivationPulse({ progress, fromX, fromY, toX, toY, start }) {
   );
 }
 
-export function BristolVisual({ progress }) {
+// Firing-neuron loop: each registered edge flashes a small pulse from
+// source to target node at staggered intervals. Continuous, autonomous,
+// no scroll dependency. Mounted only while scene is active so the loop
+// always restarts from delay zero on re-entry.
+function FiringPulse({ fromX, fromY, toX, toY, delay, duration, repeatDelay }) {
+  return (
+    <motion.circle
+      r={3.4}
+      fill={STROKE_SOFT}
+      initial={{ opacity: 0, cx: fromX, cy: fromY }}
+      animate={{
+        cx: [fromX, toX],
+        cy: [fromY, toY],
+        opacity: [0, 1, 1, 0],
+      }}
+      transition={{
+        duration,
+        delay,
+        repeat: Infinity,
+        repeatDelay,
+        times: [0, 0.12, 0.85, 1],
+        ease: "easeOut",
+      }}
+    />
+  );
+}
+
+function FiringNeurons() {
+  // A curated subset of edges across all four layers — enough to read as
+  // "the network is alive" without overloading the canvas.
+  const FIRINGS = [
+    { fromX: 60, fromY: 70, toX: 130, toY: 80, dur: 1.3, delay: 0.0, gap: 2.4 },
+    { fromX: 60, fromY: 130, toX: 130, toY: 140, dur: 1.4, delay: 0.4, gap: 2.6 },
+    { fromX: 60, fromY: 190, toX: 130, toY: 200, dur: 1.3, delay: 0.9, gap: 2.8 },
+    { fromX: 130, fromY: 110, toX: 207, toY: 100, dur: 1.5, delay: 0.3, gap: 2.2 },
+    { fromX: 130, fromY: 170, toX: 207, toY: 180, dur: 1.4, delay: 0.7, gap: 2.5 },
+    { fromX: 130, fromY: 230, toX: 207, toY: 220, dur: 1.5, delay: 1.1, gap: 2.7 },
+    { fromX: 207, fromY: 140, toX: 273, toY: 140, dur: 1.6, delay: 0.5, gap: 2.0 },
+    { fromX: 207, fromY: 180, toX: 273, toY: 180, dur: 1.6, delay: 1.2, gap: 2.3 },
+  ];
+  return (
+    <>
+      {FIRINGS.map((f, i) => (
+        <FiringPulse
+          key={`fp-${i}`}
+          fromX={f.fromX}
+          fromY={f.fromY}
+          toX={f.toX}
+          toY={f.toY}
+          duration={f.dur}
+          delay={f.delay}
+          repeatDelay={f.gap}
+        />
+      ))}
+    </>
+  );
+}
+
+export function BristolVisual({ progress, active }) {
   const L1 = [70, 100, 130, 160, 190, 220];
   const L2 = [80, 110, 140, 170, 200, 230];
   const L3 = [100, 140, 180, 220];
@@ -265,31 +323,8 @@ export function BristolVisual({ progress }) {
           ))
         )}
 
-        {/* activation pulse traveling input → output */}
-        <ActivationPulse
-          progress={progress}
-          fromX={64}
-          fromY={130}
-          toX={126}
-          toY={140}
-          start={0.62}
-        />
-        <ActivationPulse
-          progress={progress}
-          fromX={134}
-          fromY={140}
-          toX={203}
-          toY={140}
-          start={0.65}
-        />
-        <ActivationPulse
-          progress={progress}
-          fromX={211}
-          fromY={140}
-          toX={269}
-          toY={140}
-          start={0.68}
-        />
+        {/* firing-neuron loop — mount-gated so it restarts on re-entry */}
+        {active && <FiringNeurons />}
 
         {/* loss curve in bottom right */}
         <PathLine
@@ -362,40 +397,86 @@ export function BristolVisual({ progress }) {
 
 // PID controller — step-response curve converges to setpoint with
 // proportional / integral / derivative correction labels.
-function StepResponse({ progress, drawStart }) {
-  // build the underdamped step-response path
+function buildStepResponse() {
   const X0 = 60;
   const W = 280;
-  const baseY = 220; // y = 0 line
-  const SP_Y = 110; // setpoint line (y = 1)
+  const baseY = 220;
+  const SP_Y = 110;
   const samples = 120;
   let d = "";
+  const points = [];
   for (let i = 0; i <= samples; i++) {
     const t = i / samples;
     const time = t * 12;
     const omega = 1.6;
     const zeta = 0.18;
     const wd = omega * Math.sqrt(1 - zeta * zeta);
-    // underdamped step response
     const y =
       1 -
       Math.exp(-zeta * omega * time) *
         (Math.cos(wd * time) + (zeta / Math.sqrt(1 - zeta * zeta)) * Math.sin(wd * time));
     const px = X0 + t * W;
     const py = baseY - y * (baseY - SP_Y);
+    points.push([px, py]);
     d += i === 0 ? `M ${px} ${py}` : ` L ${px} ${py}`;
   }
+  return { d, points };
+}
+
+const STEP_RESPONSE = buildStepResponse();
+
+function StepResponse({ progress, drawStart }) {
   const len = useTransform(progress, [drawStart, drawStart + 0.4], [0, 1]);
   const op = useTransform(progress, [drawStart, drawStart + 0.1], [0, 1]);
   return (
     <motion.path
-      d={d}
+      d={STEP_RESPONSE.d}
       fill="none"
       stroke={STROKE}
       strokeWidth="1.6"
       strokeLinecap="round"
       style={{ pathLength: len, opacity: op }}
     />
+  );
+}
+
+// Tracker dot that traces the step response curve on a loop.
+// Uses motion-path animation by sampling cx/cy along the precomputed
+// trajectory points.
+function StepResponseTracker() {
+  const xs = STEP_RESPONSE.points.map((p) => p[0]);
+  const ys = STEP_RESPONSE.points.map((p) => p[1]);
+  return (
+    <>
+      <motion.circle
+        r={5}
+        fill="none"
+        stroke={STROKE}
+        strokeWidth={1.4}
+        initial={{ cx: xs[0], cy: ys[0], opacity: 0 }}
+        animate={{ cx: xs, cy: ys, opacity: [0, 1, 1, 1, 0] }}
+        transition={{
+          duration: 5.2,
+          repeat: Infinity,
+          repeatDelay: 0.6,
+          ease: "linear",
+          times: [0, 0.05, 0.5, 0.9, 1],
+        }}
+      />
+      <motion.circle
+        r={2.4}
+        fill={STROKE}
+        initial={{ cx: xs[0], cy: ys[0], opacity: 0 }}
+        animate={{ cx: xs, cy: ys, opacity: [0, 1, 1, 1, 0] }}
+        transition={{
+          duration: 5.2,
+          repeat: Infinity,
+          repeatDelay: 0.6,
+          ease: "linear",
+          times: [0, 0.05, 0.5, 0.9, 1],
+        }}
+      />
+    </>
   );
 }
 
@@ -432,7 +513,7 @@ function GainTerm({ progress, x, y, sub, delay, color = STROKE }) {
   );
 }
 
-export function ImperialVisual({ progress }) {
+export function ImperialVisual({ progress, active }) {
   return (
     <svg viewBox="0 0 400 300" className="visualSvg" aria-hidden="true">
       <Breathe duration={16} intensity={0.4}>
@@ -502,6 +583,9 @@ export function ImperialVisual({ progress }) {
 
         {/* response curve */}
         <StepResponse progress={progress} drawStart={0.22} />
+
+        {/* autonomous tracker — re-traces the curve on a loop */}
+        {active && <StepResponseTracker />}
 
         {/* axis labels */}
         <FadeText
@@ -625,7 +709,47 @@ function Candle({ progress, candle, start }) {
   );
 }
 
-export function DalerVisual({ progress }) {
+// Continuous loop on Daler: a ripple expands from each signal in sequence,
+// reads as "the desk is identifying live trades".
+function SignalPing({ cx, cy, color, delay }) {
+  return (
+    <motion.circle
+      cx={cx}
+      cy={cy}
+      fill="none"
+      stroke={color}
+      strokeWidth={1.2}
+      initial={{ r: 6, opacity: 0 }}
+      animate={{ r: [6, 22, 22], opacity: [0.85, 0, 0] }}
+      transition={{
+        duration: 2.4,
+        delay,
+        repeat: Infinity,
+        repeatDelay: 1.8,
+        times: [0, 0.55, 1],
+        ease: "easeOut",
+      }}
+    />
+  );
+}
+
+function DalerPulses() {
+  const SIGNALS = [
+    { cx: 95, cy: 210, color: SIGNAL_BUY, delay: 0.0 },
+    { cx: 170, cy: 125, color: SIGNAL_SELL, delay: 1.0 },
+    { cx: 245, cy: 135, color: SIGNAL_BUY, delay: 2.0 },
+    { cx: 295, cy: 70, color: SIGNAL_SELL, delay: 3.0 },
+  ];
+  return (
+    <>
+      {SIGNALS.map((s, i) => (
+        <SignalPing key={i} {...s} />
+      ))}
+    </>
+  );
+}
+
+export function DalerVisual({ progress, active }) {
   const candles = [
     { x: 70, top: 180, bottom: 220, openTop: 200, openBottom: 210, up: false },
     { x: 95, top: 140, bottom: 200, openTop: 175, openBottom: 195, up: true },
@@ -693,6 +817,9 @@ export function DalerVisual({ progress }) {
 
         {/* PnL pill, top-right corner clear of any signals */}
         <PnLTag progress={progress} x={363} y={28} delay={0.9} value="+18.4%" />
+
+        {/* autonomous signal pulses — mount-gated so they restart on entry */}
+        {active && <DalerPulses />}
       </Breathe>
     </svg>
   );
@@ -1205,8 +1332,48 @@ function Medal({ progress, item, index, start, clipId, isActive, onClick }) {
   );
 }
 
-export function HackathonsVisual({ progress }) {
-  const [active, setActive] = React.useState(null);
+// Continuous loop on Hackathons: a soft ring pulses out from each medal
+// in sequence — reads as "the trophies are alive". Pure overlay, doesn't
+// touch the click-to-detail Medal component.
+function MedalGlowRing({ x, y, delay }) {
+  return (
+    <motion.circle
+      cx={x}
+      cy={y}
+      fill="none"
+      stroke={STROKE_SOFT}
+      strokeWidth={0.8}
+      initial={{ r: 12, opacity: 0 }}
+      animate={{ r: [12, 24, 24], opacity: [0, 0.55, 0] }}
+      transition={{
+        duration: 2.4,
+        delay,
+        repeat: Infinity,
+        repeatDelay: 1.6,
+        times: [0, 0.5, 1],
+        ease: "easeOut",
+      }}
+    />
+  );
+}
+
+function HackathonsPulses({ items }) {
+  return (
+    <>
+      {items.map((it, i) => (
+        <MedalGlowRing
+          key={`mgr-${i}`}
+          x={it.x}
+          y={202}
+          delay={i * 0.45}
+        />
+      ))}
+    </>
+  );
+}
+
+export function HackathonsVisual({ progress, active }) {
+  const [openIdx, setOpenIdx] = React.useState(null);
   const items = [
     {
       x: 70,
@@ -1301,15 +1468,18 @@ export function HackathonsVisual({ progress }) {
             index={i}
             start={0.06 + i * 0.1}
             clipId={`medal-clip-${i}`}
-            isActive={active === i}
+            isActive={openIdx === i}
             onClick={(e) => {
               e.stopPropagation();
-              setActive(active === i ? null : i);
+              setOpenIdx(openIdx === i ? null : i);
             }}
           />
         ))}
-        {active !== null && <MedalDetail item={items[active]} />}
+        {openIdx !== null && <MedalDetail item={items[openIdx]} />}
       </Breathe>
+
+      {/* autonomous staggered ring pulses, mount-gated on scene entry */}
+      {active && <HackathonsPulses items={items} />}
     </svg>
   );
 }

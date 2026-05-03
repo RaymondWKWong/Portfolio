@@ -1,7 +1,7 @@
 import React from "react";
 // import SectionLabel from "../ui/SectionLabel";
 // import Reveal from "../ui/Reveal";
-import Bio from "./Bio";
+// import Bio from "./Bio";
 // import Career from "./Career";
 import PublicationsConferences from "./PublicationsConferences";
 // import SkillsTools from "./SkillsTools";
@@ -14,7 +14,7 @@ function AboutSection() {
         <SectionLabel serial="03" label="About" />
       </div> */}
 
-      <Bio />
+      {/* <Bio /> */}
       {/* <Career /> */}
       <PublicationsConferences />
       {/* <SkillsTools /> */}

@@ -1,54 +1,32 @@
-import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
+import { motion, useInView, useMotionValue } from "framer-motion";
+import Snap from "lenis/snap";
 import FluidBackdrop from "../ui/FluidBackdrop";
 import NetworkBackdrop from "../ui/NetworkBackdrop";
 import { journey } from "../../data/journey";
 import { ILLUSTRATIONS } from "./JourneyVisuals";
+import { prefersReducedMotion } from "../../lib/motion";
+import { subscribeLenis } from "../../lib/lenis";
 import styles from "./Journey.module.css";
 
-function JourneyScene({ scrollYProgress, start, end, scene, sceneIndex, total }) {
-  const fadeIn = 0.03;
-  const fadeOut = 0.03;
-  const isFirst = sceneIndex === 0;
-  const isLast = sceneIndex === total - 1;
-  const opacityStops = isFirst && isLast
-    ? [1, 1, 1, 1]
-    : isFirst
-    ? [1, 1, 1, 0]
-    : isLast
-    ? [0, 1, 1, 1]
-    : [0, 1, 1, 0];
-  const opacity = useTransform(
-    scrollYProgress,
-    [start, start + fadeIn, end - fadeOut, end],
-    opacityStops
-  );
-  const pointerEvents = useTransform(opacity, (v) =>
-    v > 0.5 ? "auto" : "none"
-  );
-  const y = useTransform(scrollYProgress, [start, end], [40, -40]);
+function JourneyScene({ scene, sceneRef, active, onActivate }) {
+  const inView = useInView(sceneRef, { amount: 0.55 });
+  const fullProgress = useMotionValue(1);
 
-  // The illustration draws in across the FIRST 40% of the scene's scroll.
-  // The remaining 60% is a soft-lock dwell: scene sits fully revealed while
-  // you read, requiring a deliberate scroll to advance to the next chapter.
-  const animEnd = start + 0.4 * (end - start);
-  const sceneProgress = useTransform(scrollYProgress, [start, animEnd], [0, 1]);
+  useEffect(() => {
+    if (inView) onActivate();
+  }, [inView, onActivate]);
 
-  const wordmarkX = useTransform(scrollYProgress, [start, end], [-30, 30]);
-  const wordmarkScale = useTransform(
-    scrollYProgress,
-    [start, (start + end) / 2, end],
-    [0.95, 1.03, 0.97]
-  );
-
+  const isActive = active && inView;
   const Visual = ILLUSTRATIONS[scene.visualKey];
 
   return (
-    <motion.div
-      className={styles.scene}
-      style={{ opacity, y }}
-      data-scene={scene.serial}
-    >
+    <div ref={sceneRef} className={styles.scene} data-scene={scene.serial}>
       {scene.network ? (
         <NetworkBackdrop bg={scene.bg} accent={scene.accent} />
       ) : (
@@ -57,19 +35,21 @@ function JourneyScene({ scrollYProgress, start, end, scene, sceneIndex, total })
 
       <motion.div
         className={styles.wordmark}
-        style={{ x: wordmarkX, scale: wordmarkScale }}
+        animate={
+          isActive && !prefersReducedMotion()
+            ? { scale: [0.97, 1.03, 0.97] }
+            : { scale: 1 }
+        }
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
         aria-hidden="true"
       >
         {scene.wordmark}
       </motion.div>
 
-      <motion.div className={styles.sceneInner} style={{ pointerEvents }}>
+      <div className={styles.sceneInner}>
         <div className={styles.copy}>
           {scene.logo && (
-            <span
-              className={styles.brandLogoWrap}
-              aria-hidden="true"
-            >
+            <span className={styles.brandLogoWrap} aria-hidden="true">
               <img
                 src={scene.logo}
                 alt=""
@@ -145,28 +125,32 @@ function JourneyScene({ scrollYProgress, start, end, scene, sceneIndex, total })
               {scene.pillsLabel && (
                 <p className={styles.pillsLabel}>{scene.pillsLabel}</p>
               )}
-              <ul className={`${styles.pills} ${scene.pillsLabel ? styles.pillsWithLabel : ""}`}>
+              <ul
+                className={`${styles.pills} ${
+                  scene.pillsLabel ? styles.pillsWithLabel : ""
+                }`}
+              >
                 {scene.pills.map((p) => {
-                const isLink = typeof p === "object" && p.href;
-                const label = typeof p === "string" ? p : p.label;
-                return (
-                  <li key={label} className={styles.pillWrap}>
-                    {isLink ? (
-                      <a
-                        href={p.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`${styles.pill} ${styles.pillLink}`}
-                      >
-                        <span>{label}</span>
-                        <span aria-hidden="true">↗</span>
-                      </a>
-                    ) : (
-                      <span className={styles.pill}>{label}</span>
-                    )}
-                  </li>
-                );
-              })}
+                  const isLink = typeof p === "object" && p.href;
+                  const label = typeof p === "string" ? p : p.label;
+                  return (
+                    <li key={label} className={styles.pillWrap}>
+                      {isLink ? (
+                        <a
+                          href={p.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`${styles.pill} ${styles.pillLink}`}
+                        >
+                          <span>{label}</span>
+                          <span aria-hidden="true">↗</span>
+                        </a>
+                      ) : (
+                        <span className={styles.pill}>{label}</span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </>
           )}
@@ -174,42 +158,38 @@ function JourneyScene({ scrollYProgress, start, end, scene, sceneIndex, total })
 
         <div className={styles.visualCol}>
           <div className={styles.visualStage}>
-            {Visual && <Visual progress={sceneProgress} />}
+            {Visual && (
+              <Visual progress={fullProgress} active={isActive} />
+            )}
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
-function Tick({ scrollYProgress, at, label }) {
-  const opacity = useTransform(
-    scrollYProgress,
-    [at - 0.06, at, at + 0.06],
-    [0.3, 1, 0.3]
-  );
+function ProgressTrack({ activeIndex, total, visible }) {
+  const fillPct = total <= 1 ? 0 : (activeIndex / (total - 1)) * 100;
   return (
-    <motion.span className={styles.tick} style={{ opacity }}>
-      {label}
-    </motion.span>
-  );
-}
-
-function ProgressTrack({ scrollYProgress, total }) {
-  const fill = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-  return (
-    <div className={styles.progress} aria-hidden="true">
+    <div
+      className={`${styles.progress} ${visible ? styles.progressVisible : ""}`}
+      aria-hidden="true"
+    >
       <div className={styles.progressTrack}>
-        <motion.div className={styles.progressFill} style={{ height: fill }} />
+        <div
+          className={styles.progressFill}
+          style={{ height: `${fillPct}%` }}
+        />
       </div>
       <div className={styles.progressTicks}>
         {Array.from({ length: total }).map((_, i) => (
-          <Tick
+          <span
             key={i}
-            scrollYProgress={scrollYProgress}
-            at={total === 1 ? 0.5 : i / (total - 1)}
-            label={String(i + 1).padStart(2, "0")}
-          />
+            className={styles.tick}
+            style={{ opacity: i === activeIndex ? 1 : 0.3 }}
+          >
+            {String(i + 1).padStart(2, "0")}
+          </span>
         ))}
       </div>
     </div>
@@ -217,37 +197,92 @@ function ProgressTrack({ scrollYProgress, total }) {
 }
 
 function Journey() {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end end"],
-  });
+  const sectionRef = useRef(null);
+  const sceneRefs = useRef([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [journeyInView, setJourneyInView] = useState(false);
   const N = journey.length;
 
-  return (
-    <section
-      ref={ref}
-      className={styles.journey}
-      id="journey"
-      style={{ height: `${N * 240}vh` }}
-    >
-      <div className={styles.sticky}>
-        <div className={styles.stage}>
-          {journey.map((s, i) => (
-            <JourneyScene
-              key={s.serial}
-              scrollYProgress={scrollYProgress}
-              start={i / N}
-              end={(i + 1) / N}
-              scene={s}
-              sceneIndex={i}
-              total={N}
-            />
-          ))}
-        </div>
+  // Stable refs array
+  if (sceneRefs.current.length !== N) {
+    sceneRefs.current = Array.from({ length: N }, () => React.createRef());
+  }
 
-        <ProgressTrack scrollYProgress={scrollYProgress} total={N} />
-      </div>
+  // Track whether the journey section is on screen (controls progress fade).
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setJourneyInView(entry.intersectionRatio > 0.15),
+      { threshold: [0, 0.15, 0.5] }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  // Hook Lenis Snap into journey scenes + neighbouring section anchors,
+  // so snapping inside Journey is always to a scene, but scrolling past
+  // the last/first scene snaps cleanly into the next/previous section
+  // instead of trapping the user.
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+    let snap;
+    let removeFns = [];
+    const unsubscribe = subscribeLenis((lenis) => {
+      removeFns.forEach((fn) => fn?.());
+      removeFns = [];
+      if (!lenis) {
+        snap?.destroy();
+        snap = null;
+        return;
+      }
+      snap = new Snap(lenis, {
+        type: "proximity",
+        duration: 0.85,
+        easing: (t) => 1 - Math.pow(1 - t, 3),
+        debounce: 120,
+        velocityThreshold: 0.4,
+      });
+      // Hero anchor and Selected Work anchor act as exits.
+      const hero = document.getElementById("top");
+      const work = document.getElementById("work");
+      if (hero) removeFns.push(snap.addElement(hero, { align: ["start"] }));
+      sceneRefs.current.forEach((r) => {
+        if (r.current)
+          removeFns.push(snap.addElement(r.current, { align: ["start"] }));
+      });
+      if (work) removeFns.push(snap.addElement(work, { align: ["start"] }));
+    });
+    return () => {
+      removeFns.forEach((fn) => fn?.());
+      snap?.destroy();
+      unsubscribe();
+    };
+  }, [N]);
+
+  // Active scene tracking via per-scene useInView (set by JourneyScene).
+  const sceneCallbacks = useMemo(
+    () => journey.map((_, i) => () => setActiveIndex(i)),
+    []
+  );
+
+  return (
+    <section className={styles.journey} id="journey" ref={sectionRef}>
+      {journey.map((s, i) => (
+        <JourneyScene
+          key={s.serial}
+          scene={s}
+          sceneRef={sceneRefs.current[i]}
+          active={activeIndex === i}
+          onActivate={sceneCallbacks[i]}
+        />
+      ))}
+
+      <ProgressTrack
+        activeIndex={activeIndex}
+        total={N}
+        visible={journeyInView}
+      />
     </section>
   );
 }

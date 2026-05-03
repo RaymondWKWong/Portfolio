@@ -105,11 +105,7 @@ function Hero() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 1.6, delay: 1.6, ease: NAME_EASE }}
         >
-          <motion.div
-            className={styles.portraitOrb}
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-          >
+          <div className={styles.portraitOrb}>
             <img
               src={portrait}
               alt="Raymond Wong"
@@ -117,7 +113,7 @@ function Hero() {
               decoding="async"
               loading="eager"
             />
-          </motion.div>
+          </div>
         </motion.div>
       </div>
 
