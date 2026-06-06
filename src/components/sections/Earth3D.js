@@ -1,306 +1,526 @@
-import React, { useRef, useLayoutEffect, useMemo } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import React, { useRef, useMemo, useEffect, useLayoutEffect } from "react";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { prefersReducedMotion } from "../../lib/motion";
 import styles from "./Earth3D.module.css";
 
-// Place a child group on the sphere surface so its local +Y points outward.
-function SurfaceItem({ theta, phi, r = 1, children }) {
-  const ref = useRef();
+// ─────────────────────────────────────────────────────────────────────────
+// 01C / "Amara" — a realistic Blue Marble that GENERATES itself from a single
+// gold "prompt" point: stars ignite, a gold generation-frontier sweeps the
+// textured planet into existence (continents assembling from dust), clouds
+// condense, the blue atmosphere blooms, night-side cities flicker on, then it
+// settles into a slow, majestic rotation. Raw three.js + R3F (no drei).
+//
+// Lighting is bespoke (single fixed WORLD-space sun). Because the sun is fixed
+// in world space and the globe spins, the day/night terminator sweeps across
+// the continents naturally. Custom ShaderMaterials throughout; every visible
+// shader ends with <tonemapping_fragment> then <colorspace_fragment> because
+// R3F v8 runs ACESFilmic tone mapping + sRGB output by default and a raw
+// ShaderMaterial does NOT auto-inject the output transform.
+// ─────────────────────────────────────────────────────────────────────────
+
+const TEX_URLS = [
+  "/textures/earth_day.jpg", // sRGB color (Blue Marble)
+  "/textures/earth_clouds.png", // RGBA, alpha = cloud coverage
+  "/textures/earth_specular.jpg", // linear data: ocean = white, land = black
+  "/textures/earth_normal.jpg", // linear data: tangent-space normal
+  "/textures/earth_lights.png", // sRGB color: night city lights
+];
+
+const GOLD_HEX = "#E7D99F"; // brand "heavenly gold"
+const ATMO_HEX = "#6BA8E0"; // soft atmospheric blue
+const SUN_DIR = new THREE.Vector3(0.7, 0.25, 0.6).normalize();
+const AXIAL_TILT = 0.4101524; // 23.44° in radians
+
+// ── timeline easing helpers (pure JS) ──────────────────────────────────────
+const clamp01 = (x) => Math.min(1, Math.max(0, x));
+const seg = (t, a, b) => clamp01((t - a) / (b - a));
+const easeOut = (x) => 1 - Math.pow(1 - clamp01(x), 3);
+const easeInOut = (x) => {
+  x = clamp01(x);
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+};
+
+// ── GLSL ────────────────────────────────────────────────────────────────────
+const EARTH_VERT = /* glsl */ `
+  varying vec2 vUv;
+  varying vec3 vWorldPos;
+  varying vec3 vObjNormal;
+  varying float vBuildCoord;
+  uniform float uBuild;
+  uniform float uTime;
+  uniform float uReduced;
+
+  void main() {
+    vUv = uv;
+    vec3 n = normalize(normal);
+    vObjNormal = n;
+    vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+
+    // Generation sweep tied to the SURFACE (object space) so it never appears
+    // to rotate while spin is frozen during the build. 0 (far side) -> 1 (prompt).
+    vec3 sweepAxis = normalize(vec3(0.35, 0.55, 1.0));
+    vBuildCoord = dot(n, sweepAxis) * 0.5 + 0.5;
+
+    // Frontier travels from the prompt point across the globe as uBuild 0->1.
+    float frontier = mix(1.12, -0.16, uBuild);
+    float d = vBuildCoord - frontier;
+    float forming = 1.0 - smoothstep(0.0, 0.12, d); // 1 just-forming -> 0 settled
+    float jitter = (uReduced > 0.5)
+      ? 0.0
+      : forming * 0.045 * sin(position.x * 38.0 + uTime * 6.0)
+                       * cos(position.y * 33.0 - uTime * 5.0);
+    // Forming surface rises out from slightly inside as it resolves.
+    vec3 displaced = position + n * (jitter - forming * 0.03);
+
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
+  }
+`;
+
+const EARTH_FRAG = /* glsl */ `
+  varying vec2 vUv;
+  varying vec3 vWorldPos;
+  varying vec3 vObjNormal;
+  varying float vBuildCoord;
+
+  uniform sampler2D uDay;
+  uniform sampler2D uSpec;
+  uniform sampler2D uNormal;
+  uniform sampler2D uLights;
+  uniform vec3 uSunWorld;
+  uniform vec3 uGold;
+  uniform float uBuild;
+  uniform float uTime;
+  uniform float uReduced;
+
+  // Derivative-based TBN (core in WebGL2 / #version 300 es — no extension).
+  vec3 perturbNormal(vec3 N, vec3 wp, vec2 uv) {
+    vec3 dp1 = dFdx(wp), dp2 = dFdy(wp);
+    vec2 du1 = dFdx(uv), du2 = dFdy(uv);
+    vec3 dp2p = cross(dp2, N), dp1p = cross(N, dp1);
+    vec3 T = dp2p * du1.x + dp1p * du2.x;
+    vec3 B = dp2p * du1.y + dp1p * du2.y;
+    float invmax = inversesqrt(max(dot(T, T), dot(B, B)));
+    mat3 TBN = mat3(T * invmax, B * invmax, N);
+    vec3 mn = texture2D(uNormal, uv).xyz * 2.0 - 1.0;
+    mn.xy *= 0.6; // soften relief / seam shimmer
+    return normalize(TBN * mn);
+  }
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
+
+  void main() {
+    // ── build reveal ──────────────────────────────────────────────────────
+    float grain = (hash(floor(vUv * 256.0)) - 0.5) * 0.05;
+    float frontier = mix(1.12, -0.16, uBuild);
+    float d = vBuildCoord - frontier;
+    float edge = 0.12;
+    float built = smoothstep(0.0, edge, d + grain); // 0 unborn -> 1 born
+    if (built <= 0.001) discard;
+
+    // ── lighting (world-space, single fixed sun) ───────────────────────────
+    vec3 Nworld = normalize(vWorldPos);
+    vec3 Nbump = perturbNormal(Nworld, vWorldPos, vUv);
+    vec3 L = normalize(uSunWorld);
+    float NdL = dot(Nworld, L);
+    float day = smoothstep(-0.12, 0.20, NdL);
+
+    vec3 albedo = texture2D(uDay, vUv).rgb; // already linear (sRGB sampler)
+    float ocean = texture2D(uSpec, vUv).r; // white = water
+
+    // Sky fill: faint cool scatter, but only on the lit/twilight side so the
+    // night hemisphere falls toward true black.
+    vec3 ambient = albedo * 0.04 + vec3(0.0, 0.006, 0.018) * day;
+
+    // Diffuse with real sun intensity so highlights reach the ACES roll-off and
+    // the Blue Marble reads vivid (not muddy); plus a touch of ocean blue.
+    float diff = max(dot(Nbump, L), 0.0);
+    diff = mix(max(NdL, 0.0), diff, 0.6); // temper bump so it can't over-darken
+    vec3 diffuse = albedo * diff * 1.75 + vec3(0.0, 0.02, 0.05) * ocean * diff;
+
+    // Ocean sun glint (gated by spec map + lit side). A tight, point-like
+    // highlight: high exponent + a mostly-smooth normal so relief doesn't
+    // smear it into a broad hotspot.
+    vec3 V = normalize(cameraPosition - vWorldPos);
+    vec3 Nspec = normalize(mix(Nworld, Nbump, 0.3));
+    vec3 H = normalize(L + V);
+    float spec = pow(max(dot(Nspec, H), 0.0), 220.0)
+               * ocean * smoothstep(0.0, 0.22, max(NdL, 0.0));
+    vec3 specCol = mix(vec3(1.0), uGold, 0.6) * spec * 1.1;
+
+    // Heavenly-gold sunrise band along the terminator.
+    float term = clamp(1.0 - abs(NdL) * 4.0, 0.0, 1.0)
+               * smoothstep(-0.3, 0.0, NdL + 0.15);
+    vec3 termGlow = uGold * term * 0.10;
+
+    // Night-side cities, confined to the true dark side by an independent steep
+    // gate (so they never bleed into the gold terminator), booting up as their
+    // region is generated.
+    vec3 lightsTex = texture2D(uLights, vUv).rgb;
+    float cnight = smoothstep(0.05, -0.25, NdL); // 1 only well past the terminator
+    float bornAge = clamp((d + grain) / 0.6, 0.0, 1.0);
+    float flick = (uReduced > 0.5)
+      ? 1.0
+      : mix(0.65 + 0.35 * sin(uTime * 9.0 + hash(floor(vUv * 180.0)) * 30.0),
+            1.0, smoothstep(0.7, 1.0, uBuild));
+    float boot = smoothstep(0.2, 0.95, bornAge) * flick;
+    vec3 cityGlow = lightsTex * cnight * cnight * vec3(1.0, 0.82, 0.5) * 2.2 * boot;
+
+    vec3 color = ambient + diffuse + specCol + termGlow + cityGlow;
+
+    // Bright gold generation frontier riding the reveal edge.
+    float band = smoothstep(edge, 0.0, abs(d + grain))
+               * (1.0 - smoothstep(0.92, 1.0, uBuild));
+    color += uGold * band * 2.4;
+
+    // Dust shimmer just ahead of the frontier.
+    float ahead = 1.0 - built;
+    float dust = (uReduced > 0.5)
+      ? 0.0
+      : ahead * (0.5 + 0.5 * sin(vObjNormal.x * 60.0 + uTime * 8.0))
+              * (0.5 + 0.5 * cos(vObjNormal.y * 55.0 - uTime * 7.0));
+    color += uGold * dust * 0.22;
+
+    float alpha = max(built, band * 0.6);
+    if (uReduced > 0.5) alpha = 1.0;
+
+    gl_FragColor = vec4(color, alpha);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
+const CLOUD_VERT = /* glsl */ `
+  varying vec2 vUv;
+  varying vec3 vWorldPos;
+  void main() {
+    vUv = uv;
+    vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const CLOUD_FRAG = /* glsl */ `
+  varying vec2 vUv;
+  varying vec3 vWorldPos;
+  uniform sampler2D uClouds;
+  uniform vec3 uSunWorld;
+  uniform float uReveal;
+  uniform float uTime;
+  uniform float uReduced;
+  void main() {
+    vec2 uv = vUv;
+    uv.x += uTime * 0.004 * (1.0 - uReduced); // gentle east-west drift
+    vec4 c = texture2D(uClouds, uv);
+    float cover = c.a;
+    if (cover < 0.01) discard;
+    vec3 N = normalize(vWorldPos);
+    float NdL = dot(N, normalize(uSunWorld));
+    float day = smoothstep(-0.1, 0.25, NdL);
+    vec3 col = mix(vec3(0.02, 0.03, 0.05), vec3(1.0), day);
+    float alpha = cover * uReveal * (0.02 + 0.98 * day);
+    gl_FragColor = vec4(col, alpha);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
+const ATMO_VERT = /* glsl */ `
+  varying vec3 vWorldNormal;
+  varying vec3 vWorldPos;
+  void main() {
+    vWorldNormal = normalize(mat3(modelMatrix) * normal);
+    vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const ATMO_FRAG = /* glsl */ `
+  varying vec3 vWorldNormal;
+  varying vec3 vWorldPos;
+  uniform vec3 uAtmoColor;
+  uniform vec3 uGold;
+  uniform vec3 uSunWorld;
+  uniform float uIntensity;
+  void main() {
+    vec3 N = normalize(-vWorldNormal); // BackSide -> flip to outward normal
+    vec3 V = normalize(cameraPosition - vWorldPos);
+    float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+    float sun = clamp(dot(N, normalize(uSunWorld)), 0.0, 1.0);
+    vec3 rim = mix(uAtmoColor, uGold, sun * 0.5);
+    float a = fres * uIntensity;
+    gl_FragColor = vec4(rim * fres * (0.8 + sun * 0.6), a);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
+const STAR_VERT = /* glsl */ `
+  attribute float aSize;
+  attribute vec3 aColor;
+  varying vec3 vColor;
+  varying float vTw;
+  uniform float uTime;
+  uniform float uPixelRatio;
+  uniform float uReduced;
+  void main() {
+    vColor = aColor;
+    float tw = 0.6 + 0.4 * sin(uTime * 1.5 + position.x * 0.7 + position.y * 1.3);
+    vTw = mix(tw, 0.9, uReduced);
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = aSize * uPixelRatio * (170.0 / -mv.z);
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+
+const STAR_FRAG = /* glsl */ `
+  varying vec3 vColor;
+  varying float vTw;
+  uniform float uReveal;
+  void main() {
+    vec2 d = gl_PointCoord - 0.5;
+    float r = length(d);
+    float a = smoothstep(0.5, 0.0, r) * vTw * uReveal;
+    if (a < 0.01) discard;
+    gl_FragColor = vec4(vColor, a);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
+// ── scene ───────────────────────────────────────────────────────────────────
+function Scene({ active, reduced }) {
+  const gl = useThree((s) => s.gl);
+  const [dayTex, cloudTex, specTex, normalTex, lightsTex] = useLoader(
+    THREE.TextureLoader,
+    TEX_URLS
+  );
+
+  // Configure textures (after commit, before paint — nothing is drawn until the
+  // build latches, so there is no flash of unconfigured texture).
   useLayoutEffect(() => {
-    if (!ref.current) return;
-    const x = r * Math.sin(phi) * Math.cos(theta);
-    const y = r * Math.cos(phi);
-    const z = r * Math.sin(phi) * Math.sin(theta);
-    ref.current.position.set(x, y, z);
-    ref.current.lookAt(0, 0, 0);
-    ref.current.rotateX(-Math.PI / 2);
-  }, [theta, phi, r]);
-  return <group ref={ref}>{children}</group>;
-}
+    const color = [dayTex, lightsTex, cloudTex];
+    const data = [specTex, normalTex];
+    color.forEach((t) => (t.colorSpace = THREE.SRGBColorSpace));
+    data.forEach((t) => (t.colorSpace = THREE.NoColorSpace));
+    const maxAniso = gl.capabilities.getMaxAnisotropy();
+    [dayTex, cloudTex, specTex, normalTex, lightsTex].forEach((t) => {
+      t.anisotropy = Math.min(8, maxAniso);
+      t.wrapS = THREE.RepeatWrapping; // longitude is periodic
+      t.wrapT = THREE.ClampToEdgeWrapping; // clamp at poles
+      t.minFilter = THREE.LinearMipmapLinearFilter;
+      t.magFilter = THREE.LinearFilter;
+      t.generateMipmaps = true;
+      t.needsUpdate = true;
+    });
+  }, [dayTex, cloudTex, specTex, normalTex, lightsTex, gl]);
 
-function House({ color = "#fef3c7", roof = "#dc2626" }) {
-  return (
-    <group>
-      <mesh position={[0, 0.05, 0]}>
-        <boxGeometry args={[0.1, 0.1, 0.1]} />
-        <meshStandardMaterial color={color} flatShading />
-      </mesh>
-      <mesh position={[0, 0.13, 0]} rotation={[0, Math.PI / 4, 0]}>
-        <coneGeometry args={[0.085, 0.06, 4]} />
-        <meshStandardMaterial color={roof} flatShading />
-      </mesh>
-    </group>
+  const earthMat = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        uniforms: {
+          uDay: { value: dayTex },
+          uSpec: { value: specTex },
+          uNormal: { value: normalTex },
+          uLights: { value: lightsTex },
+          uSunWorld: { value: SUN_DIR.clone() },
+          uGold: { value: new THREE.Color(GOLD_HEX).convertSRGBToLinear() },
+          uBuild: { value: 0 },
+          uTime: { value: 0 },
+          uReduced: { value: reduced ? 1 : 0 },
+        },
+        vertexShader: EARTH_VERT,
+        fragmentShader: EARTH_FRAG,
+        transparent: true,
+        depthWrite: true,
+      }),
+    [dayTex, specTex, normalTex, lightsTex, reduced]
   );
-}
 
-function Tree() {
-  return (
-    <group>
-      <mesh position={[0, 0.035, 0]}>
-        <cylinderGeometry args={[0.01, 0.015, 0.07, 6]} />
-        <meshStandardMaterial color="#78350f" flatShading />
-      </mesh>
-      <mesh position={[0, 0.115, 0]}>
-        <coneGeometry args={[0.065, 0.14, 6]} />
-        <meshStandardMaterial color="#15803d" flatShading />
-      </mesh>
-    </group>
+  const cloudMat = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        uniforms: {
+          uClouds: { value: cloudTex },
+          uSunWorld: { value: SUN_DIR.clone() },
+          uReveal: { value: 0 },
+          uTime: { value: 0 },
+          uReduced: { value: reduced ? 1 : 0 },
+        },
+        vertexShader: CLOUD_VERT,
+        fragmentShader: CLOUD_FRAG,
+        transparent: true,
+        depthWrite: false,
+      }),
+    [cloudTex, reduced]
   );
-}
 
-// Continent centres + radii (in radians of great-circle distance) loosely
-// inspired by Earth's real distribution: a big Eurasia-Africa landmass,
-// the Americas, an Australia-like island, an Antarctica-like south cap,
-// and some smaller bodies.
-const CONTINENTS = [
-  { theta: 0.7, phi: 0.95, radius: 0.78 }, // Eurasia / Africa
-  { theta: 3.4, phi: 1.0, radius: 0.7 }, //  Americas
-  { theta: 2.05, phi: 1.85, radius: 0.32 }, // Australia
-  { theta: 0.0, phi: 2.75, radius: 0.55 }, //  Antarctica-ish south cap
-  { theta: 4.4, phi: 0.45, radius: 0.28 }, //  Greenland-ish
-  { theta: 5.55, phi: 1.55, radius: 0.22 }, // small island chain
-];
-
-function dirVec(theta, phi) {
-  const x = Math.sin(phi) * Math.cos(theta);
-  const y = Math.cos(phi);
-  const z = Math.sin(phi) * Math.sin(theta);
-  return new THREE.Vector3(x, y, z);
-}
-
-const CONTINENT_DIRS = CONTINENTS.map((c) => ({
-  ...c,
-  dir: dirVec(c.theta, c.phi),
-}));
-
-// Smooth multi-octave 3D noise from layered sines. Range roughly [-0.18, 0.18].
-function bumpNoise(x, y, z) {
-  return (
-    0.09 * Math.sin(x * 5.2 + 1.7) +
-    0.07 * Math.sin(y * 6.4 + 0.4) +
-    0.06 * Math.sin(z * 4.9 - 2.1) +
-    0.04 * Math.sin((x + z) * 9.1 + 3.2) +
-    0.04 * Math.sin((y - z) * 8.3 - 1.5)
+  const atmoMat = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        uniforms: {
+          uAtmoColor: { value: new THREE.Color(ATMO_HEX).convertSRGBToLinear() },
+          uGold: { value: new THREE.Color(GOLD_HEX).convertSRGBToLinear() },
+          uSunWorld: { value: SUN_DIR.clone() },
+          uIntensity: { value: 0 },
+        },
+        vertexShader: ATMO_VERT,
+        fragmentShader: ATMO_FRAG,
+        transparent: true,
+        depthWrite: false,
+        side: THREE.BackSide,
+        blending: THREE.AdditiveBlending,
+      }),
+    []
   );
-}
 
-// True if the point on the unit sphere falls inside any continent's
-// noisy great-circle disc.
-function isLandPoint(v) {
-  const noise = bumpNoise(v.x, v.y, v.z);
-  for (const c of CONTINENT_DIRS) {
-    const dot = Math.max(-1, Math.min(1, v.dot(c.dir)));
-    const arc = Math.acos(dot); // 0 at centre, π at antipode
-    if (arc + noise < c.radius) return true;
-  }
-  return false;
-}
+  const stars = useMemo(() => {
+    const isMobile =
+      typeof window !== "undefined" && window.innerWidth < 768;
+    const count = isMobile ? 700 : 1300;
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+    const c = new THREE.Color();
+    for (let i = 0; i < count; i++) {
+      const u = Math.random() * 2 - 1;
+      const th = Math.random() * Math.PI * 2;
+      const s = Math.sqrt(1 - u * u);
+      const r = 34 + Math.random() * 30;
+      positions[i * 3] = r * s * Math.cos(th);
+      positions[i * 3 + 1] = r * u;
+      positions[i * 3 + 2] = r * s * Math.sin(th);
+      if (Math.random() < 0.16) c.set(GOLD_HEX);
+      else c.setHSL(0.6, 0.12, 0.78 + Math.random() * 0.22);
+      c.convertSRGBToLinear();
+      colors[i * 3] = c.r;
+      colors[i * 3 + 1] = c.g;
+      colors[i * 3 + 2] = c.b;
+      sizes[i] = (Math.random() < 0.08 ? 2.3 : 1.0) * (0.6 + Math.random() * 0.9);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute("aColor", new THREE.BufferAttribute(colors, 3));
+    geo.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
+    const pr =
+      typeof window !== "undefined"
+        ? Math.min(window.devicePixelRatio || 1, 1.75)
+        : 1;
+    const mat = new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 0 },
+        uReveal: { value: 0 },
+        uPixelRatio: { value: pr },
+        uReduced: { value: reduced ? 1 : 0 },
+      },
+      vertexShader: STAR_VERT,
+      fragmentShader: STAR_FRAG,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+      blending: THREE.AdditiveBlending,
+    });
+    return { geo, mat };
+  }, [reduced]);
 
-function buildEarthGeometry() {
-  const geo = new THREE.SphereGeometry(1, 128, 96);
-  const pos = geo.attributes.position;
-  const colors = new Float32Array(pos.count * 3);
+  const spinRef = useRef();
+  const build = useRef({ latched: false, t: 0, done: false });
 
-  const ocean = new THREE.Color("#1d4ed8");
-  const land = new THREE.Color("#16a34a");
-  const landDark = new THREE.Color("#15803d");
-  const sand = new THREE.Color("#fde68a");
+  // Snap every animated value to its finished state.
+  const applyComplete = () => {
+    earthMat.uniforms.uBuild.value = 1;
+    cloudMat.uniforms.uReveal.value = 1;
+    atmoMat.uniforms.uIntensity.value = 0.85;
+    stars.mat.uniforms.uReveal.value = 1;
+  };
 
-  const v = new THREE.Vector3();
-  for (let i = 0; i < pos.count; i++) {
-    v.set(pos.getX(i), pos.getY(i), pos.getZ(i)).normalize();
+  useEffect(() => {
+    return () => {
+      earthMat.dispose();
+      cloudMat.dispose();
+      atmoMat.dispose();
+      stars.mat.dispose();
+      stars.geo.dispose();
+    };
+  }, [earthMat, cloudMat, atmoMat, stars]);
 
-    // Distance to nearest continent boundary (with noise) — used both
-    // for colouring and elevation.
-    const noise = bumpNoise(v.x, v.y, v.z);
-    let minSigned = Infinity;
-    for (const c of CONTINENT_DIRS) {
-      const dot = Math.max(-1, Math.min(1, v.dot(c.dir)));
-      const arc = Math.acos(dot);
-      const signed = arc + noise - c.radius; // <0 inside, >0 outside
-      if (signed < minSigned) minSigned = signed;
+  useFrame((state, dt) => {
+    const t = state.clock.elapsedTime;
+    earthMat.uniforms.uTime.value = t;
+    cloudMat.uniforms.uTime.value = t;
+    stars.mat.uniforms.uTime.value = t;
+
+    const B = build.current;
+    if (active && !B.latched) {
+      B.latched = true;
+      B.t = 0;
+      if (reduced) {
+        applyComplete();
+        B.done = true;
+      }
+    }
+    if (!B.latched) return; // nothing renders until the scene is first entered
+    if (!active && B.done) return; // idle/paused off-screen once finished
+
+    if (!reduced && !B.done) {
+      B.t += dt;
+      const T = B.t;
+      earthMat.uniforms.uBuild.value = easeInOut(seg(T, 0.3, 3.0));
+      cloudMat.uniforms.uReveal.value = easeOut(seg(T, 1.6, 3.4));
+      atmoMat.uniforms.uIntensity.value = easeOut(seg(T, 2.0, 3.6)) * 0.85;
+      stars.mat.uniforms.uReveal.value = easeOut(seg(T, 0.0, 0.6));
+      if (T >= 4.4) {
+        applyComplete();
+        B.done = true;
+      }
     }
 
-    let r = 1;
-    let color;
-    if (minSigned < -0.025) {
-      // Inland: green, slight bump.
-      color = noise > 0 ? land : landDark;
-      r = 1.012;
-    } else if (minSigned < 0) {
-      // Coast strip: sandy edge, very slight bump.
-      color = sand;
-      r = 1.005;
-    } else {
-      color = ocean;
+    if (!reduced && spinRef.current) {
+      // Spin frozen during the hero sweep, then eased into a slow rotation.
+      const spinGain = B.done ? 1 : easeInOut(seg(B.t, 3.2, 4.4));
+      spinRef.current.rotation.y += dt * 0.05 * spinGain;
     }
-
-    pos.setXYZ(i, v.x * r, v.y * r, v.z * r);
-    colors[i * 3] = color.r;
-    colors[i * 3 + 1] = color.g;
-    colors[i * 3 + 2] = color.b;
-  }
-
-  pos.needsUpdate = true;
-  geo.computeVertexNormals();
-  geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-  return geo;
-}
-
-function Cloud({ scale = 1 }) {
-  return (
-    <group scale={scale}>
-      <mesh>
-        <sphereGeometry args={[0.09, 10, 10]} />
-        <meshStandardMaterial color="#ffffff" flatShading roughness={0.9} />
-      </mesh>
-      <mesh position={[0.09, 0.02, 0]}>
-        <sphereGeometry args={[0.07, 10, 10]} />
-        <meshStandardMaterial color="#ffffff" flatShading roughness={0.9} />
-      </mesh>
-      <mesh position={[-0.08, 0.015, 0.02]}>
-        <sphereGeometry args={[0.065, 10, 10]} />
-        <meshStandardMaterial color="#ffffff" flatShading roughness={0.9} />
-      </mesh>
-      <mesh position={[0.04, 0.05, 0.04]}>
-        <sphereGeometry args={[0.055, 10, 10]} />
-        <meshStandardMaterial color="#ffffff" flatShading roughness={0.9} />
-      </mesh>
-    </group>
-  );
-}
-
-function pickLandPlacements(candidates) {
-  // Filter the candidate (theta, phi) list to the ones that land on land
-  // so houses/trees aren't planted in the middle of the ocean.
-  return candidates.filter(({ theta, phi }) => isLandPoint(dirVec(theta, phi)));
-}
-
-const HOUSE_CANDIDATES = [
-  { theta: 0.5, phi: 0.85, color: "#fef3c7", roof: "#dc2626" },
-  { theta: 0.85, phi: 1.0, color: "#fed7aa", roof: "#b45309" },
-  { theta: 1.1, phi: 1.15, color: "#fbcfe8", roof: "#9d174d" },
-  { theta: 0.65, phi: 1.25, color: "#bfdbfe", roof: "#1e40af" },
-  { theta: 3.3, phi: 0.9, color: "#fef3c7", roof: "#dc2626" },
-  { theta: 3.6, phi: 1.1, color: "#e9d5ff", roof: "#7c3aed" },
-  { theta: 3.1, phi: 1.25, color: "#fed7aa", roof: "#b45309" },
-  { theta: 3.45, phi: 1.45, color: "#fef3c7", roof: "#dc2626" },
-  { theta: 2.05, phi: 1.85, color: "#bbf7d0", roof: "#15803d" },
-  { theta: 2.2, phi: 1.95, color: "#fbcfe8", roof: "#9d174d" },
-  { theta: 4.4, phi: 0.45, color: "#bfdbfe", roof: "#1e40af" },
-  { theta: 0.2, phi: 2.7, color: "#fef3c7", roof: "#dc2626" },
-];
-
-const TREE_CANDIDATES = [
-  { theta: 0.4, phi: 0.78 },
-  { theta: 0.7, phi: 0.92 },
-  { theta: 0.95, phi: 1.05 },
-  { theta: 1.2, phi: 1.2 },
-  { theta: 0.55, phi: 1.32 },
-  { theta: 0.3, phi: 1.05 },
-  { theta: 3.2, phi: 0.85 },
-  { theta: 3.5, phi: 1.0 },
-  { theta: 3.7, phi: 1.18 },
-  { theta: 3.0, phi: 1.18 },
-  { theta: 3.4, phi: 1.35 },
-  { theta: 2.0, phi: 1.78 },
-  { theta: 2.15, phi: 1.92 },
-  { theta: 1.95, phi: 1.95 },
-  { theta: 4.35, phi: 0.42 },
-  { theta: 4.5, phi: 0.5 },
-  { theta: 0.6, phi: 2.65 },
-  { theta: 5.1, phi: 2.78 },
-  { theta: 5.55, phi: 1.55 },
-];
-
-function World() {
-  const worldRef = useRef();
-  const cloudsRef = useRef();
-  const earthGeo = useMemo(() => buildEarthGeometry(), []);
-  const houses = useMemo(() => pickLandPlacements(HOUSE_CANDIDATES), []);
-  const trees = useMemo(() => pickLandPlacements(TREE_CANDIDATES), []);
-
-  useFrame((_, dt) => {
-    if (worldRef.current) worldRef.current.rotation.y += dt * 0.16;
-    if (cloudsRef.current) cloudsRef.current.rotation.y += dt * 0.05;
   });
 
   return (
     <>
-      <group ref={worldRef}>
-        {/* Earth: ocean + continents painted into a single sphere via
-            vertex colours, with subtle outward displacement on land
-            for relief. */}
-        <mesh geometry={earthGeo}>
-          <meshStandardMaterial vertexColors roughness={0.85} flatShading />
+      <points
+        geometry={stars.geo}
+        material={stars.mat}
+        renderOrder={-1}
+        frustumCulled={false}
+      />
+      <group rotation={[AXIAL_TILT, 0, 0]}>
+        <group ref={spinRef}>
+          <mesh renderOrder={0}>
+            <sphereGeometry args={[1, 96, 64]} />
+            <primitive object={earthMat} attach="material" />
+          </mesh>
+          <mesh renderOrder={1}>
+            <sphereGeometry args={[1.012, 96, 64]} />
+            <primitive object={cloudMat} attach="material" />
+          </mesh>
+        </group>
+        <mesh renderOrder={2}>
+          <sphereGeometry args={[1.18, 64, 48]} />
+          <primitive object={atmoMat} attach="material" />
         </mesh>
-
-        {houses.map((h, i) => (
-          <SurfaceItem key={`h-${i}`} theta={h.theta} phi={h.phi} r={1.014}>
-            <House color={h.color} roof={h.roof} />
-          </SurfaceItem>
-        ))}
-
-        {trees.map((t, i) => (
-          <SurfaceItem key={`t-${i}`} theta={t.theta} phi={t.phi} r={1.014}>
-            <Tree />
-          </SurfaceItem>
-        ))}
-      </group>
-
-      {/* Cloud layer drifts independently above the surface */}
-      <group ref={cloudsRef}>
-        <SurfaceItem theta={0.8} phi={0.4} r={1.32}>
-          <Cloud scale={1.1} />
-        </SurfaceItem>
-        <SurfaceItem theta={1.9} phi={0.65} r={1.32}>
-          <Cloud scale={0.9} />
-        </SurfaceItem>
-        <SurfaceItem theta={3.2} phi={1.55} r={1.32}>
-          <Cloud scale={1.15} />
-        </SurfaceItem>
-        <SurfaceItem theta={4.4} phi={0.5} r={1.32}>
-          <Cloud scale={1.0} />
-        </SurfaceItem>
-        <SurfaceItem theta={5.6} phi={1.35} r={1.32}>
-          <Cloud scale={0.85} />
-        </SurfaceItem>
-        <SurfaceItem theta={2.4} phi={0.95} r={1.32}>
-          <Cloud scale={1.05} />
-        </SurfaceItem>
-        <SurfaceItem theta={1.4} phi={2.1} r={1.32}>
-          <Cloud scale={1.05} />
-        </SurfaceItem>
-        <SurfaceItem theta={2.8} phi={1.85} r={1.32}>
-          <Cloud scale={0.95} />
-        </SurfaceItem>
-        <SurfaceItem theta={4.2} phi={2.25} r={1.32}>
-          <Cloud scale={1.1} />
-        </SurfaceItem>
-        <SurfaceItem theta={5.4} phi={2.0} r={1.32}>
-          <Cloud scale={0.9} />
-        </SurfaceItem>
       </group>
     </>
   );
 }
 
-export default function Earth3D() {
+export default function Earth3D({ active }) {
+  const reduced = useMemo(() => prefersReducedMotion(), []);
   return (
     <div className={styles.wrap}>
       <Canvas
-        dpr={[1.25, 2]}
+        dpr={[1, 1.75]}
         camera={{ position: [0, 0.4, 5.6], fov: 30 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       >
-        <ambientLight intensity={0.55} />
-        <directionalLight position={[3, 5, 4]} intensity={1.05} />
-        <directionalLight
-          position={[-3, -2, 2]}
-          intensity={0.4}
-          color="#7dd3fc"
-        />
-        <World />
+        <React.Suspense fallback={null}>
+          <Scene active={active} reduced={reduced} />
+        </React.Suspense>
       </Canvas>
     </div>
   );
