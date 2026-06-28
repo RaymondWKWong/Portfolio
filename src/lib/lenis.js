@@ -3,10 +3,22 @@ import Lenis from "lenis";
 import { prefersReducedMotion } from "./motion";
 
 let _lenis = null;
+let _snap = null;
 const subscribers = new Set();
 
 export function getLenis() {
   return _lenis;
+}
+
+// The Journey registers its Lenis Snap instance here so other controllers
+// (e.g. keyboard section-nav) can pause snapping during a programmatic jump
+// instead of fighting the proximity snap.
+export function setSnap(snap) {
+  _snap = snap;
+}
+
+export function getSnap() {
+  return _snap;
 }
 
 export function subscribeLenis(cb) {

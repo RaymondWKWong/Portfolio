@@ -1,21 +1,25 @@
 :root {
+  /* ── Apple system palette ─────────────────────────────────────────── */
   --paper: #ffffff;
-  --paper-2: #f7f7f8;
-  --paper-3: #fafafb;
-  --ink: #0a0a0b;
-  --ink-soft: #1f1f23;
-  --muted: #6e6e76;
-  --muted-strong: #4a4a52;
-  --rule: #ebebef;
-  --rule-strong: #d4d4dc;
-  --accent: #0a0a0b;
-  --accent-soft: rgba(10, 10, 11, 0.06);
-  --highlight: #ededf2;
+  --paper-2: #f5f5f7; /* Apple section grey */
+  --paper-3: #fbfbfd;
+  --ink: #1d1d1f; /* Apple primary text */
+  --ink-soft: #2d2d2f;
+  --muted: #86868b; /* Apple secondary text */
+  --muted-strong: #6e6e73;
+  --rule: #d2d2d7; /* Apple hairline */
+  --rule-strong: #c7c7cc;
+  --accent: #0066cc; /* Apple link blue */
+  --accent-strong: #0071e3; /* Apple button blue */
+  --accent-soft: rgba(0, 102, 204, 0.08);
+  --highlight: #f5f5f7;
 
-  --serif: "Instrument Serif", "Times New Roman", Georgia, serif;
-  --sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
-    Arial, sans-serif;
-  --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Apple uses SF Pro; -apple-system resolves to it on Apple devices,
+     with Helvetica Neue / Arial as the cross-platform fallback. */
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --serif: var(--sans);
+  --mono: "SF Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --step--1: clamp(0.78rem, 0.76rem + 0.1vw, 0.85rem);
   --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
@@ -45,4 +49,19 @@
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ── Liquid glass (Apple-style translucent surfaces) ──────────────── */
+  --glass-fill: rgba(255, 255, 255, 0.55);
+  --glass-fill-strong: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-hairline: rgba(17, 17, 24, 0.07);
+  --glass-blur: blur(22px) saturate(1.7);
+  --glass-blur-soft: blur(14px) saturate(1.5);
+  --glass-shadow: 0 22px 48px -30px rgba(24, 24, 40, 0.4),
+    0 2px 8px -4px rgba(24, 24, 40, 0.12);
+  --glass-sheen: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+
+  /* Deeper, metallic "heavenly gold" that reads on a light stage. */
+  --gold: #b8902f;
+  --gold-soft: #c9a24b;
 }

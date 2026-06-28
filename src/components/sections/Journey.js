@@ -4,14 +4,12 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { motion, useInView, useMotionValue } from "framer-motion";
+import { useInView, useMotionValue } from "framer-motion";
 import Snap from "lenis/snap";
-import FluidBackdrop from "../ui/FluidBackdrop";
-import NetworkBackdrop from "../ui/NetworkBackdrop";
 import { journey } from "../../data/journey";
 import { ILLUSTRATIONS } from "./JourneyVisuals";
 import { prefersReducedMotion } from "../../lib/motion";
-import { subscribeLenis } from "../../lib/lenis";
+import { subscribeLenis, setSnap } from "../../lib/lenis";
 import styles from "./Journey.module.css";
 
 function JourneyScene({ scene, sceneRef, active, onActivate }) {
@@ -26,25 +24,15 @@ function JourneyScene({ scene, sceneRef, active, onActivate }) {
   const Visual = ILLUSTRATIONS[scene.visualKey];
 
   return (
-    <div ref={sceneRef} className={styles.scene} data-scene={scene.serial}>
-      {scene.network ? (
-        <NetworkBackdrop bg={scene.bg} accent={scene.accent} />
-      ) : (
-        <FluidBackdrop tint={scene.tint} intensity={0.42} bg={scene.bg} />
-      )}
-
-      <motion.div
-        className={styles.wordmark}
-        animate={
-          isActive && !prefersReducedMotion()
-            ? { scale: [0.97, 1.03, 0.97] }
-            : { scale: 1 }
-        }
-        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-        aria-hidden="true"
-      >
+    <div
+      ref={sceneRef}
+      className={styles.scene}
+      data-scene={scene.serial}
+      style={{ background: scene.bg }}
+    >
+      <span className={styles.wordmark} aria-hidden="true">
         {scene.wordmark}
-      </motion.div>
+      </span>
 
       <div className={styles.sceneInner}>
         <div className={styles.copy}>
@@ -234,6 +222,7 @@ function Journey() {
       if (!lenis) {
         snap?.destroy();
         snap = null;
+        setSnap(null);
         return;
       }
       snap = new Snap(lenis, {
@@ -243,6 +232,7 @@ function Journey() {
         debounce: 120,
         velocityThreshold: 0.4,
       });
+      setSnap(snap);
       // Hero anchor and Selected Work anchor act as exits.
       const hero = document.getElementById("top");
       const work = document.getElementById("work");
@@ -256,6 +246,7 @@ function Journey() {
     return () => {
       removeFns.forEach((fn) => fn?.());
       snap?.destroy();
+      setSnap(null);
       unsubscribe();
     };
   }, [N]);

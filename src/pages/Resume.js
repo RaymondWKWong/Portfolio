@@ -1,24 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import React from "react";
 import { AiOutlineDownload } from "react-icons/ai";
-import { FiArrowLeft } from "react-icons/fi";
+import { FiArrowLeft, FiExternalLink } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import pdf from "../Assets/CV.pdf";
 import styles from "./Resume.module.css";
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-
+// The CV is shown with the browser's native PDF viewer via an <iframe>. This is
+// deliberately dependency-free: the previous react-pdf + CDN pdf.js worker setup
+// rendered a blank 0×0 canvas whenever the worker version/path drifted, so the
+// page "opened" but never loaded. A plain embed always renders, and the Download
+// link is the guaranteed fallback.
 function Resume() {
-  const [width, setWidth] = useState(1200);
-
-  useEffect(() => {
-    const update = () => setWidth(window.innerWidth);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
   return (
     <main className={styles.page}>
       <div className={styles.head}>
@@ -38,15 +30,36 @@ function Resume() {
       </div>
 
       <div className={styles.frame}>
-        <Document file={pdf} className={styles.doc}>
-          <Page
-            pageNumber={1}
-            scale={width > 900 ? 1.5 : 0.55}
-            renderAnnotationLayer={false}
-            renderTextLayer={false}
-          />
-        </Document>
+        {/* <object> renders the browser's native PDF viewer and, on any browser
+            that can't display a PDF inline (some mobile/in-app WebViews), shows
+            the nested fallback instead of a blank pane. */}
+        <object
+          data={`${pdf}#view=FitH`}
+          type="application/pdf"
+          className={styles.doc}
+          aria-label="Raymond Wong — CV"
+        >
+          <div className={styles.objFallback}>
+            <p>This browser can’t display the PDF inline.</p>
+            <a
+              href={pdf}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.download}
+            >
+              <AiOutlineDownload aria-hidden="true" />
+              Open the CV
+            </a>
+          </div>
+        </object>
       </div>
+
+      <p className={styles.fallback}>
+        Trouble viewing it inline?{" "}
+        <a href={pdf} target="_blank" rel="noopener noreferrer">
+          Open the CV in a new tab <FiExternalLink aria-hidden="true" />
+        </a>
+      </p>
     </main>
   );
 }

@@ -1,13 +1,44 @@
+/* The realistic Earth lives inside a dark, rounded "bento" tile — an Apple
+   pattern (dark product windows set on a light page). The deep-space backdrop
+   lets the Blue Marble, atmosphere and stars read as premium, while the page
+   around it stays white. */
 .wrap {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 320px;
-  display: block;
+  min-height: 360px;
+  aspect-ratio: 1 / 1;
+  max-width: 540px;
+  margin-inline: auto;
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 120% at 50% 30%, #14161c 0%, #06070a 60%, #030305 100%);
+  box-shadow: 0 40px 80px -48px rgba(10, 12, 20, 0.55),
+    0 2px 6px -2px rgba(10, 12, 20, 0.2);
+  isolation: isolate;
+}
+
+.wrap::after {
+  /* subtle inner hairline for the glass-tile edge */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  pointer-events: none;
 }
 
 .wrap canvas {
   width: 100% !important;
   height: 100% !important;
   display: block;
+  cursor: grab;
+  /* horizontal drag spins the globe; vertical swipes still scroll the page
+     (pan-y) so the globe never becomes a scroll dead-zone on mobile */
+  touch-action: pan-y;
+}
+
+.wrap canvas:active {
+  cursor: grabbing;
 }
