@@ -9,6 +9,7 @@ import LogoAnthropic from "../Assets/Logos/Anthropic_Logo.jpg";
 import Logo10DS from "../Assets/Logos/10DS_Logo.jpg";
 import news01C from "../Assets/01C_TechEU.jpg";
 import news01CPortal from "../Assets/01C_TechNews.png";
+import news01CTweet from "../Assets/01C_TweetAmara.jpg";
 
 export const journey = [
   {
@@ -43,6 +44,15 @@ export const journey = [
         source: "The Tech News Portal",
         date: "2026",
         url: "https://thetechnewsportal.com/latest/01c-wants-to-erase-the-friction-between-imagination-and-3d-world-building",
+      },
+      {
+        image: news01CTweet,
+        title:
+          "Hot take: AI won't replace game devs. But game devs who manually place 600 props one by one after describing the scene in their head probably will start wondering why they still do that. #Amara",
+        source: "X · @RaymondWongPhD",
+        date: "Jun 3, 2026",
+        url: "https://x.com/RaymondWongPhD/status/2062151501963792848",
+        cta: "Read on X ↗",
       },
     ],
   },

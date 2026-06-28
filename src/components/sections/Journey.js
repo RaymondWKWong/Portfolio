@@ -98,7 +98,7 @@ function JourneyScene({ scene, sceneRef, active, onActivate }) {
                         </span>
                         <span className={styles.newsCardTitle}>{n.title}</span>
                         <span className={styles.newsCardCta}>
-                          Read article ↗
+                          {n.cta || "Read article ↗"}
                         </span>
                       </span>
                     </button>
