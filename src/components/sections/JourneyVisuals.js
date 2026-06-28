@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from "react";
-import { motion, useTransform } from "framer-motion";
+import { motion, useTransform, AnimatePresence } from "framer-motion";
+import { getLenis } from "../../lib/lenis";
 import LogoIMC from "../../Assets/Logos/IMC_Logo.jpg";
 import LogoOrionHack from "../../Assets/Logos/OrionHack_Logo.jpg";
 import LogoMorganStanley from "../../Assets/Logos/MorganStanleyLogo.jpg";
@@ -7,6 +8,75 @@ import Logo10DS from "../../Assets/Logos/10DS_Logo.jpg";
 import LogoAnthropic from "../../Assets/Logos/Anthropic_Logo.jpg";
 import LogoManGroup from "../../Assets/Logos/ManGroup_Logo.jpg";
 import LogoQuantMinds from "../../Assets/Logos/QuantMinds_Logo.jpg";
+// Real images from each LinkedIn post, downloaded locally so they load reliably
+// and crisply (embedding LinkedIn's iframe is blocked by many browsers). Each
+// hackathon takes an `images: [...]` array; `fit: "contain"` frames a
+// screenshot in full, the default "cover" fills the pane for a photo.
+import LiIMC from "../../Assets/LinkedIn/imc.jpg";
+import LiOrion from "../../Assets/LinkedIn/orion.jpg";
+import LiAnthropic from "../../Assets/LinkedIn/anthropic.jpg";
+import LiManGroup from "../../Assets/LinkedIn/mangroup.jpg";
+import LiDowning from "../../Assets/LinkedIn/downing.jpg";
+import PhotoMakaStory from "../../Assets/Projects/makastory.png";
+import PhotoQuantMindsHack from "../../Assets/QuantMinds_Hackathon_03.jpg";
+import PhotoQuantMindsConf from "../../Assets/quantminds-conference.jpeg";
+import Avatar from "../../Assets/profile_no_background.png";
+import { FaLinkedin } from "react-icons/fa";
+import hk from "./Hackathons.module.css";
+
+// Real captions from each LinkedIn post — rendered natively (the iframe embed is
+// blocked by Safari/tracking-protected browsers, so we recreate the post).
+const CAPTIONS = {
+  imc: `World's largest algorithmic trading 📈 competition hosted by IMC Trading - this time with a team!
+
+Out of 20,000 registered teams, we ranked:
+
+🇬🇧 9th in the UK overall
+🌍 15th globally in manual trading
+🌍 107th globally overall
+
+In addition to applying game theory and probability in manual trading, our algorithmic strategies included:
+- Market making with Avellaneda-Stoikov
+- Mean reversion and momentum strategies using Bollinger bands
+- Volatility arbitrage using Black-Scholes, delta hedging, and gamma scalping
+- Bayesian optimisation to fine-tune strategy parameters
+
+An incredible learning experience - made possible by an amazing team effort alongside James Z., Minjae Kim, Noah Schouwenaar, and Saeid Heidari over an intense 15 days!
+
+#IMC #QuantitativeTrading #AlgorithmicTrading #Competition #Hackathon #Prosperity3`,
+  orion: `Excited to share that our team secured second place 🥈 in OrionHack! 🚀 🛰
+
+The hackathon was an incredible experience. We worked on a project aimed at mitigating the risks of collisions in space using machine learning. I'm grateful for the opportunity to collaborate with such an amazing team who brought diverse skills to the table. 🙌
+
+Together, we created visualisations of space debris and satellites based on live data to highlight the risks of collisions to better understand their impact. The addition of real-time data analysis and utilising machine learning was an exciting learning opportunity.
+
+A big thank you for the fantastic hackathon organised by Matvey Boguslavskiy!
+
+#orion #machinelearning #space`,
+  anthropic: `"Can you get a quick market update first thing tomorrow?" sent at 10pm.
+
+Every analyst knows the sinking feeling of getting this email.
+To save your evening (and your sleep!), I built a Market AI Agent.
+
+📈 Tracks key economic indicators
+📰 Summarises news from multiple sources
+📩 Sends digests when indicators move
+💬 Chat interface to explore insights instantly
+
+I built this PoC in just one evening at Anthropic Agents Hackathon at LSE and this is only the start! (Pitch decks? Dashboard updates?)
+
+#Anthropic #AIAgents #Hackathon`,
+  mangroup: `Had a fantastic time participating in #ManGroup Open Source Hackathon! It was a wonderful opportunity to work on finmarketpy and collaborate with talented people.
+
+Thank you Man Group for hosting such an amazing event, bringing together like-minded individuals to contribute to open-source (and keeping us all well-fed!).`,
+  downing: `At 10 Downing Street's "Rewire the State" hackathon 🇬🇧, I had the privilege of helping explore how data and AI can be harnessed to improve government and deliver better outcomes.
+
+We developed a platform that cuts through fragmented datasets on early years and brings them into a consolidated view of the factors shaping children's life chances. Rather than presenting raw data, it distils the analysis to highlight what matters most - making it easier for local authorities to see challenges clearly and act on them. Early years aren't just about education – outcomes are tied to wider government priorities, underscoring the need for joined-up action.
+
+Thank you to Jade L., the Prime Minister's AI adviser, for sharing her thoughtful perspectives as a judge.
+
+And huge thanks to Eoin Mulgrew for bringing together expertise from diverse fields to create the space for new outlooks and for making the event happen.`,
+};
 
 const Earth3DLazy = lazy(() => import("./Earth3D"));
 
@@ -21,7 +91,7 @@ function Earth3D(props) {
 const STROKE = "var(--ink)";
 const STROKE_SOFT = "var(--muted-strong)";
 const FILL_SOFT = "var(--paper-2)";
-const IMPERIAL_BLUE = "#1d4ed8";
+const IMPERIAL_BLUE = "#0066cc";
 const SIGNAL_BUY = "#16a34a";
 const SIGNAL_SELL = "#dc2626";
 
@@ -1230,6 +1300,7 @@ function Medal({ progress, item, index, start, clipId, isActive, onClick }) {
 
   return (
     <motion.g
+      data-medal=""
       style={{ y: dropY, opacity: op, cursor: "pointer" }}
       onClick={onClick}
       whileHover={{ scale: 1.06 }}
@@ -1372,6 +1443,9 @@ export function HackathonsVisual({ progress, active }) {
       result: "107th globally · 9th UK · 13,000+ teams",
       blurb: "Live algorithmic trading. Market making, statistical arbitrage, Black-Scholes options pricing, delta hedging.",
       stack: ["Python", "NumPy", "Black-Scholes"],
+      linkedin: "7321262190555009026",
+      caption: CAPTIONS.imc,
+      images: [LiIMC],
     },
     {
       x: 120,
@@ -1383,6 +1457,9 @@ export function HackathonsVisual({ progress, active }) {
       result: "2nd place / 250+ teams",
       blurb: "LSTM model forecasting collision risk between satellites and orbital debris, with live-data visualisation.",
       stack: ["Python", "PyTorch", "LSTM", "WebGL"],
+      linkedin: "7091848307957710848",
+      caption: CAPTIONS.orion,
+      images: [LiOrion],
     },
     {
       x: 170,
@@ -1394,6 +1471,8 @@ export function HackathonsVisual({ progress, active }) {
       result: "Top 10",
       blurb: "MakaStory: accessible story generator for children with impairments. Text, speech, and sign-language input.",
       stack: ["React", "Python", "ML model"],
+      images: [PhotoMakaStory],
+      fit: "contain",
     },
     {
       x: 220,
@@ -1404,6 +1483,9 @@ export function HackathonsVisual({ progress, active }) {
       result: "Selected participant",
       blurb: "Built tool-using agents on Claude with multi-step planning and structured outputs.",
       stack: ["Claude API", "Python", "TypeScript"],
+      linkedin: "7341794417931874305",
+      caption: CAPTIONS.anthropic,
+      images: [LiAnthropic],
     },
     {
       x: 270,
@@ -1414,6 +1496,9 @@ export function HackathonsVisual({ progress, active }) {
       result: "Selected participant",
       blurb: "Quant strategy hackathon with Man Group's research desk.",
       stack: ["Python", "Time-series"],
+      linkedin: "7261724512482639873",
+      caption: CAPTIONS.mangroup,
+      images: [LiManGroup],
     },
     {
       x: 320,
@@ -1424,6 +1509,7 @@ export function HackathonsVisual({ progress, active }) {
       result: "Selected participant",
       blurb: "Conference-side trading hackathon, live execution against benchmark strategies.",
       stack: ["Python", "Backtester"],
+      images: [PhotoQuantMindsHack, PhotoQuantMindsConf],
     },
     {
       x: 370,
@@ -1434,134 +1520,225 @@ export function HackathonsVisual({ progress, active }) {
       result: "Selected participant",
       blurb: "Government-tech hackathon: building public-sector tooling with cross-department data.",
       stack: ["Python", "Web", "GovData"],
+      linkedin: "7374707140260954113",
+      caption: CAPTIONS.downing,
+      images: [LiDowning],
     },
   ];
+  const open = openIdx !== null;
   return (
-    <svg viewBox="0 0 400 300" className="visualSvg" aria-hidden="true">
-      <Breathe duration={14} intensity={0.4}>
-        <line
-          x1="50"
-          y1="222"
-          x2="385"
-          y2="222"
-          stroke={STROKE_SOFT}
-          strokeWidth="0.8"
-        />
-        {items.map((item, i) => (
-          <Medal
-            key={i}
-            progress={progress}
-            item={item}
-            index={i}
-            start={0.06 + i * 0.1}
-            clipId={`medal-clip-${i}`}
-            isActive={openIdx === i}
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenIdx(openIdx === i ? null : i);
-            }}
+    <>
+      <svg viewBox="0 0 400 300" className="visualSvg" aria-hidden="true">
+        <Breathe duration={14} intensity={0.4}>
+          <line
+            x1="50"
+            y1="222"
+            x2="385"
+            y2="222"
+            stroke={STROKE_SOFT}
+            strokeWidth="0.8"
           />
-        ))}
-        {openIdx !== null && <MedalDetail item={items[openIdx]} />}
-      </Breathe>
+          {items.map((item, i) => (
+            <Medal
+              key={i}
+              progress={progress}
+              item={item}
+              index={i}
+              start={0.06 + i * 0.1}
+              clipId={`medal-clip-${i}`}
+              isActive={openIdx === i}
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenIdx(openIdx === i ? null : i);
+              }}
+            />
+          ))}
+        </Breathe>
 
-      {/* autonomous staggered ring pulses, mount-gated on scene entry */}
-      {active && <HackathonsPulses items={items} />}
-    </svg>
+        {/* autonomous staggered ring pulses, mount-gated on scene entry */}
+        {active && <HackathonsPulses items={items} />}
+      </svg>
+
+      {/* detail panel — embedded in the scene where the medals sit (not a
+          full-page modal), so it reads as an in-place expansion. */}
+      <AnimatePresence>
+        {open && (
+          <MedalPanel
+            item={items[openIdx]}
+            onClose={() => setOpenIdx(null)}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
-function MedalDetail({ item }) {
+const CARD_EASE = [0.22, 1, 0.36, 1];
+
+// Colour the #hashtags; everything else stays plain (pre-line keeps the breaks).
+function renderCaption(text) {
+  return text.split(/(#[A-Za-z0-9_]+)/g).map((part, i) =>
+    part.charAt(0) === "#" ? (
+      <span key={i} className={hk.tag}>
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+}
+
+// A native re-creation of the LinkedIn post — author, caption, image — so it
+// always renders crisply (unlike LinkedIn's iframe, which Safari/privacy
+// browsers blank out).
+function Post({ item }) {
   return (
-    <motion.foreignObject
-      x="20"
-      y="10"
-      width="360"
-      height="160"
-      initial={{ opacity: 0, y: -6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <div
-        xmlns="http://www.w3.org/1999/xhtml"
-        style={{
-          background: "var(--paper)",
-          border: "1px solid var(--rule)",
-          borderRadius: 8,
-          padding: "10px 12px",
-          fontFamily: "var(--sans)",
-          color: "var(--ink)",
-          boxShadow: "0 12px 24px -16px rgba(20,17,15,0.25)",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          gap: 4,
-          overflow: "hidden",
-          boxSizing: "border-box",
-        }}
+    <div className={hk.post}>
+      <div className={hk.postHead}>
+        <img className={hk.postAvatar} src={Avatar} alt="" />
+        <div className={hk.postMeta}>
+          <span className={hk.postName}>Raymond Wong</span>
+          <span className={hk.postHeadline}>CTO @ 01C · PhD @ Imperial</span>
+        </div>
+        <FaLinkedin className={hk.postLi} aria-hidden="true" />
+      </div>
+      <p className={hk.postBody}>{renderCaption(item.caption)}</p>
+      {(item.images || []).map((src, i) => (
+        <img
+          key={i}
+          className={hk.postImg}
+          src={src}
+          alt=""
+          loading="lazy"
+        />
+      ))}
+      <a
+        className={hk.postLink}
+        href={`https://www.linkedin.com/feed/update/urn:li:activity:${item.linkedin}/`}
+        target="_blank"
+        rel="noopener noreferrer"
       >
-        <span
-          style={{
-            fontFamily: "var(--mono)",
-            fontSize: 9.5,
-            color: "var(--muted)",
-            letterSpacing: "0.04em",
-            lineHeight: 1.3,
-          }}
+        View on LinkedIn ↗
+      </a>
+    </div>
+  );
+}
+
+function MedalPanel({ item, onClose }) {
+  const panelRef = React.useRef(null);
+  // Keep the latest onClose without re-running the effect when the parent
+  // re-renders (e.g. when switching to another medal).
+  const closeRef = React.useRef(onClose);
+  closeRef.current = onClose;
+
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") closeRef.current();
+    };
+    // Click anywhere outside the panel closes it — but a click on a medal
+    // falls through so it switches to that medal instead of closing.
+    const onDown = (e) => {
+      if (panelRef.current?.contains(e.target)) return;
+      if (e.target.closest?.("[data-medal]")) return;
+      closeRef.current();
+    };
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onDown, true);
+    getLenis()?.stop?.();
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onDown, true);
+      getLenis()?.start?.();
+    };
+  }, []);
+
+  const all = item.images || [];
+  const shown = all.slice(0, 3);
+  const extra = all.length - shown.length;
+  const countClass =
+    shown.length >= 3 ? hk.count3 : shown.length === 2 ? hk.count2 : hk.count1;
+
+  // Sits in the same column as the hackathon copy (a phantom track mirrors the
+  // scene's grid), centered over the text — so the medals stay visible and
+  // clickable on the right. Click another medal to switch, click empty space to
+  // close. The wrap/track are click-through (pointer-events: none) so they
+  // never block the medals; only the panel itself catches clicks.
+  return (
+    <motion.div
+      className={hk.panelWrap}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2, ease: CARD_EASE }}
+    >
+      <div className={hk.panelTrack}>
+        <motion.div
+          ref={panelRef}
+          className={hk.embed}
+          data-lenis-prevent
+          initial={{ opacity: 0, y: 12, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.34, ease: CARD_EASE }}
         >
-          {item.date}
-        </span>
-        <strong
-          style={{
-            fontWeight: 500,
-            fontSize: 14,
-            letterSpacing: "-0.015em",
-            lineHeight: 1.15,
-          }}
+        <button
+          type="button"
+          className={hk.close}
+          onClick={onClose}
+          aria-label="Close"
         >
-          {item.title}
-        </strong>
-        <p
-          style={{
-            margin: 0,
-            fontSize: 11,
-            lineHeight: 1.35,
-            color: "var(--muted-strong)",
-            maxWidth: "100%",
-          }}
-        >
-          {item.blurb}
-        </p>
-        {item.stack && (
-          <div
-            style={{
-              display: "flex",
-              gap: 4,
-              flexWrap: "wrap",
-              marginTop: "auto",
-            }}
-          >
-            {item.stack.map((t) => (
-              <span
-                key={t}
-                style={{
-                  fontFamily: "var(--mono)",
-                  fontSize: 9,
-                  padding: "2px 7px",
-                  border: "1px solid var(--rule-strong)",
-                  borderRadius: 999,
-                  color: "var(--ink)",
-                  whiteSpace: "nowrap",
-                  lineHeight: 1.2,
-                }}
-              >
-                {t}
-              </span>
+          ✕
+        </button>
+
+        <div className={hk.embedHead}>
+          {item.logo && (
+            <span className={hk.logo}>
+              <img src={item.logo} alt="" />
+            </span>
+          )}
+          <div className={hk.embedHeadText}>
+            <strong className={hk.title}>{item.title}</strong>
+            {item.result && <span className={hk.result}>{item.result}</span>}
+          </div>
+        </div>
+
+        {item.caption ? (
+          <Post item={item} />
+        ) : shown.length > 0 ? (
+          <div className={`${hk.gallery} ${countClass}`}>
+            {shown.map((src, i) => (
+              <div key={i} className={hk.shot}>
+                <img
+                  src={src}
+                  alt=""
+                  loading="lazy"
+                  className={hk.shotImg}
+                  style={{
+                    objectFit: item.fit || "cover",
+                    padding: item.fit === "contain" ? 12 : 0,
+                  }}
+                />
+                {i === shown.length - 1 && extra > 0 && (
+                  <span className={hk.more}>+{extra}</span>
+                )}
+              </div>
             ))}
           </div>
+        ) : (
+          item.blurb && <p className={hk.embedBlurb}>{item.blurb}</p>
         )}
+
+          {item.stack && (
+            <div className={hk.embedStack}>
+              {item.stack.map((t) => (
+                <span key={t} className={hk.chip}>
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+        </motion.div>
       </div>
-    </motion.foreignObject>
+    </motion.div>
   );
 }
 

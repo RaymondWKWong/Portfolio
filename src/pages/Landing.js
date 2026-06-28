@@ -5,9 +5,11 @@ import Journey from "../components/sections/Journey";
 import Work from "../components/sections/Work";
 import AboutSection from "../components/sections/AboutSection";
 import Contact from "../components/sections/Contact";
+import { useSectionNav } from "../lib/useSectionNav";
 
 function Landing() {
   const location = useLocation();
+  useSectionNav();
 
   useEffect(() => {
     const hash = location.hash;

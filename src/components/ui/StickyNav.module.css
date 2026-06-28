@@ -43,8 +43,9 @@
 }
 
 .brandMeta {
-  font-family: var(--mono);
-  font-size: 10px;
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 12px;
   letter-spacing: 0;
   color: var(--muted);
 }

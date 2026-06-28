@@ -1,0 +1,327 @@
+/* Medal detail — an in-scene panel. It sits inside the Journey scene's visual
+   stage (absolute, not a full-page portal) so clicking a medal expands the
+   detail in place rather than opening a separate window. The right-hand body is
+   either a native LinkedIn-style post or a local photo gallery. */
+/* Click-through layer pinned over the viewport. It never blocks the medals
+   (pointer-events: none); only the panel inside catches clicks. The track
+   mirrors the scene's content grid so the panel lands centered in the same
+   column as the hackathon copy, with the medal row on the right left clear. */
+.panelWrap {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.panelTrack {
+  width: var(--container);
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+.embed {
+  position: relative;
+  grid-column: 1;
+  /* Right-aligned in the text column and pulled across the gutter so the card
+     sits right beside the medal row — reads as "this medal → its detail" rather
+     than a panel stranded on the far left. */
+  justify-self: end;
+  margin-right: calc(-1 * var(--space-8) - 40px);
+  pointer-events: auto;
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 440px;
+  max-height: min(78vh, 660px);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 40px 90px -36px rgba(10, 12, 20, 0.42),
+    0 10px 26px -14px rgba(10, 12, 20, 0.22);
+}
+
+/* Compact context header — logo + which hackathon + the result. */
+.embedHead {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.embedHeadText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.logo {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--rule);
+}
+
+.logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.title {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.result {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 12.5px;
+  letter-spacing: -0.005em;
+  color: var(--muted-strong);
+}
+
+.embedBlurb {
+  margin: 0;
+  padding: 18px 20px;
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted-strong);
+}
+
+.embedStack {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.chip {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  padding: 5px 12px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Scrollable body — native LinkedIn post re-creation */
+.post {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 18px 20px 20px;
+}
+
+.postHead {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.postAvatar {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+}
+
+.postMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.postName {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.postHeadline {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.postLi {
+  flex: 0 0 auto;
+  color: #0a66c2;
+  font-size: 21px;
+}
+
+.postBody {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  letter-spacing: -0.003em;
+  color: var(--ink-soft);
+  white-space: pre-line;
+}
+
+.tag {
+  color: #0a66c2;
+  font-weight: 500;
+}
+
+.postImg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+}
+
+.postLink {
+  margin-top: 2px;
+  width: fit-content;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: -0.005em;
+  color: #0a66c2;
+}
+
+.postLink:hover {
+  text-decoration: underline;
+}
+
+/* Scrollable body — photo / screenshot gallery */
+.gallery {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  overflow-y: auto;
+}
+
+.count1 {
+  grid-template-rows: 1fr;
+}
+
+.count2 {
+  grid-template-rows: 1fr 1fr;
+}
+
+.count3 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1.3fr 1fr;
+}
+
+.count3 .shot:first-child {
+  grid-column: 1 / -1;
+}
+
+.shot {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  min-height: 150px;
+}
+
+.shotImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  box-sizing: border-box;
+  display: block;
+}
+
+.more {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 17, 15, 0.5);
+  color: #fff;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 12px -6px rgba(10, 12, 20, 0.3);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.close:hover {
+  background: #fff;
+  transform: scale(1.08);
+}
+
+@media (max-width: 880px) {
+  .panelTrack {
+    width: 100%;
+    grid-template-columns: 1fr;
+    padding: 0 16px;
+  }
+  .embed {
+    grid-column: 1;
+    justify-self: center;
+    margin-right: 0;
+    max-width: 520px;
+    max-height: 82vh;
+  }
+}

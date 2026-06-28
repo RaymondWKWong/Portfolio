@@ -423,6 +423,18 @@ function Scene({ active, reduced }) {
   }, [reduced]);
 
   const spinRef = useRef();
+  const userRotRef = useRef(); // user drag: spin (y) + tilt (x)
+  const parallaxRef = useRef(); // subtle cursor parallax when idle
+  const drag = useRef({
+    active: false,
+    lastX: 0,
+    lastY: 0,
+    rotY: 0,
+    rotX: 0,
+    velY: 0,
+    velX: 0,
+  });
+  const pointer = useRef({ x: 0, y: 0, has: false });
   const build = useRef({ latched: false, t: 0, done: false });
 
   // Snap every animated value to its finished state.
@@ -442,6 +454,74 @@ function Scene({ active, reduced }) {
       stars.geo.dispose();
     };
   }, [earthMat, cloudMat, atmoMat, stars]);
+
+  // ── grab-and-spin: pointer drag rotates the globe with inertia, and the
+  // cursor gently parallaxes it when idle. Works for mouse + touch + pen via
+  // Pointer Events; `touch-action: none` keeps a drag from scrolling the page.
+  useEffect(() => {
+    const el = gl.domElement;
+    const SPEED = 0.005; // radians per pixel dragged
+    const TILT = 0.6; // clamp on vertical tilt (radians)
+    const onDown = (e) => {
+      const d = drag.current;
+      d.active = true;
+      d.lastX = e.clientX;
+      d.lastY = e.clientY;
+      d.velY = 0;
+      d.velX = 0;
+      el.style.cursor = "grabbing";
+      // Don't capture touch pointers — let the browser keep ownership so a
+      // vertical swipe can still scroll the page (see touch-action: pan-y).
+      if (e.pointerType !== "touch") {
+        try {
+          el.setPointerCapture(e.pointerId);
+        } catch (_) {}
+      }
+    };
+    const onMove = (e) => {
+      const rect = el.getBoundingClientRect();
+      pointer.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.current.y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+      pointer.current.has = true;
+      const d = drag.current;
+      if (!d.active) return;
+      const dx = e.clientX - d.lastX;
+      const dy = e.clientY - d.lastY;
+      d.lastX = e.clientX;
+      d.lastY = e.clientY;
+      d.rotY += dx * SPEED;
+      d.rotX = Math.max(-TILT, Math.min(TILT, d.rotX + dy * SPEED));
+      // low-passed velocity so the inertial fling reads smooth
+      d.velY = d.velY * 0.6 + dx * SPEED * 0.4;
+      d.velX = d.velX * 0.6 + dy * SPEED * 0.4;
+    };
+    const onUp = (e) => {
+      const d = drag.current;
+      if (!d.active) return;
+      d.active = false;
+      el.style.cursor = "grab";
+      try {
+        el.releasePointerCapture(e.pointerId);
+      } catch (_) {}
+    };
+    const onLeave = () => {
+      pointer.current.has = false;
+    };
+    el.style.cursor = "grab";
+    el.style.touchAction = "pan-y";
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    el.addEventListener("pointercancel", onUp);
+    el.addEventListener("pointerleave", onLeave);
+    return () => {
+      el.removeEventListener("pointerdown", onDown);
+      el.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      el.removeEventListener("pointercancel", onUp);
+      el.removeEventListener("pointerleave", onLeave);
+    };
+  }, [gl]);
 
   useFrame((state, dt) => {
     const t = state.clock.elapsedTime;
@@ -479,6 +559,38 @@ function Scene({ active, reduced }) {
       const spinGain = B.done ? 1 : easeInOut(seg(B.t, 3.2, 4.4));
       spinRef.current.rotation.y += dt * 0.05 * spinGain;
     }
+
+    // ── user orientation: inertial drag + idle cursor parallax ───────────
+    const d = drag.current;
+    if (userRotRef.current) {
+      if (!d.active) {
+        // glide to rest after a fling — both the step and the decay are
+        // normalized to 60fps frames so the throw feels identical at any
+        // display refresh rate (60Hz, 120Hz, …).
+        const f = dt * 60;
+        const decay = Math.pow(0.92, f);
+        d.rotY += d.velY * f;
+        d.rotX = Math.max(-0.6, Math.min(0.6, d.rotX + d.velX * f));
+        d.velY *= decay;
+        d.velX *= decay;
+        if (reduced) {
+          d.velY = 0;
+          d.velX = 0;
+        }
+      }
+      userRotRef.current.rotation.y = d.rotY;
+      userRotRef.current.rotation.x = d.rotX;
+    }
+    if (parallaxRef.current) {
+      const live = !reduced && !d.active && pointer.current.has;
+      const tx = live ? pointer.current.y * 0.05 : 0;
+      const ty = live ? pointer.current.x * 0.06 : 0;
+      const k = 1 - Math.pow(0.0015, dt); // critically-damped-ish smoothing
+      parallaxRef.current.rotation.x +=
+        (tx - parallaxRef.current.rotation.x) * k;
+      parallaxRef.current.rotation.y +=
+        (ty - parallaxRef.current.rotation.y) * k;
+    }
   });
 
   return (
@@ -489,21 +601,25 @@ function Scene({ active, reduced }) {
         renderOrder={-1}
         frustumCulled={false}
       />
-      <group rotation={[AXIAL_TILT, 0, 0]}>
-        <group ref={spinRef}>
-          <mesh renderOrder={0}>
-            <sphereGeometry args={[1, 96, 64]} />
-            <primitive object={earthMat} attach="material" />
-          </mesh>
-          <mesh renderOrder={1}>
-            <sphereGeometry args={[1.012, 96, 64]} />
-            <primitive object={cloudMat} attach="material" />
-          </mesh>
+      <group ref={parallaxRef}>
+        <group ref={userRotRef}>
+          <group rotation={[AXIAL_TILT, 0, 0]}>
+            <group ref={spinRef}>
+              <mesh renderOrder={0}>
+                <sphereGeometry args={[1, 96, 64]} />
+                <primitive object={earthMat} attach="material" />
+              </mesh>
+              <mesh renderOrder={1}>
+                <sphereGeometry args={[1.012, 96, 64]} />
+                <primitive object={cloudMat} attach="material" />
+              </mesh>
+            </group>
+            <mesh renderOrder={2}>
+              <sphereGeometry args={[1.18, 64, 48]} />
+              <primitive object={atmoMat} attach="material" />
+            </mesh>
+          </group>
         </group>
-        <mesh renderOrder={2}>
-          <sphereGeometry args={[1.18, 64, 48]} />
-          <primitive object={atmoMat} attach="material" />
-        </mesh>
       </group>
     </>
   );
@@ -511,8 +627,9 @@ function Scene({ active, reduced }) {
 
 export default function Earth3D({ active }) {
   const reduced = useMemo(() => prefersReducedMotion(), []);
+
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} aria-hidden="true">
       <Canvas
         dpr={[1, 1.75]}
         camera={{ position: [0, 0.4, 5.6], fov: 30 }}
