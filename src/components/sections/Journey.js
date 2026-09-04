@@ -1,281 +1,224 @@
-import React, {
-  useRef,
-  useState,
-  useEffect,
-  useMemo,
-} from "react";
-import { useInView, useMotionValue } from "framer-motion";
-import Snap from "lenis/snap";
+import React, { useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { FiArrowRight, FiArrowUpRight } from "react-icons/fi";
 import { journey } from "../../data/journey";
-import { ILLUSTRATIONS } from "./JourneyVisuals";
-import { prefersReducedMotion } from "../../lib/motion";
-import { subscribeLenis, setSnap } from "../../lib/lenis";
+import Reveal from "../ui/Reveal";
 import styles from "./Journey.module.css";
 
-function JourneyScene({ scene, sceneRef, active, onActivate }) {
-  const inView = useInView(sceneRef, { amount: 0.55 });
-  const fullProgress = useMotionValue(1);
-
-  useEffect(() => {
-    if (inView) onActivate();
-  }, [inView, onActivate]);
-
-  const isActive = active && inView;
-  const Visual = ILLUSTRATIONS[scene.visualKey];
-
+function Chapter({ scene }) {
   return (
-    <div
-      ref={sceneRef}
-      className={styles.scene}
-      data-scene={scene.serial}
-      style={{ background: scene.bg }}
-    >
-      <span className={styles.wordmark} aria-hidden="true">
-        {scene.wordmark}
-      </span>
-
-      <div className={styles.sceneInner}>
-        <div className={styles.copy}>
+    <div className={styles.chapter}>
+      <div className={styles.story}>
+        <div className={styles.meta}>
           {scene.logo && (
-            <span className={styles.brandLogoWrap} aria-hidden="true">
-              <img
-                src={scene.logo}
-                alt=""
-                className={styles.brandLogo}
-                loading="lazy"
-              />
-            </span>
+            <img
+              src={scene.logo}
+              alt=""
+              width="36"
+              height="36"
+              loading="lazy"
+            />
           )}
-          <span className={styles.brandName}>{scene.chapter}</span>
-          <span className={styles.brandSub}>
-            {scene.role && (
-              <>
-                {scene.role}
-                <span className={styles.brandDot} aria-hidden="true">
-                  ·
-                </span>
-              </>
-            )}
-            {scene.period}
+          <span>
+            {scene.role}
+            <br />
+            <span className={styles.org}>{scene.org}</span>
           </span>
+        </div>
+        <h3>{scene.headline}</h3>
+        <div className={styles.body}>
+          {scene.body.map((text) => (
+            <p key={text}>{text}</p>
+          ))}
+        </div>
+        {scene.pills && (
+          <ul className={styles.pills}>
+            {scene.pills.map((pill) => (
+              <li key={pill}>{pill}</li>
+            ))}
+          </ul>
+        )}
+        <p className={styles.period}>{scene.period}</p>
+      </div>
+      {scene.news ? (
+        <div className={styles.press}>
+          <div className={styles.amara} aria-hidden="true">
+            <span>Amara</span>
+            <i>by 01C</i>
+          </div>
+          <ul>
+            {scene.news.map((item) => (
+              <li key={item.url}>
+                <a href={item.url} target="_blank" rel="noopener noreferrer">
+                  <span className={styles.pressSource}>
+                    {item.source} <FiArrowUpRight aria-hidden="true" />
+                  </span>
+                  <span className={styles.pressTitle}>{item.title}</span>
+                  <span className={styles.pressDate}>{item.date}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div className={styles.chapterVisual}>
+          {scene.visualKey === "IMPERIAL" && (
+            <>
+              <span className={styles.visualSmall}>
+                Imperial College London
+              </span>
+              <span className={styles.visualType}>
+                Applied
+                <br />
+                <em>
+                  Machine
+                  <br />
+                  Learning.
+                </em>
+              </span>
+              <span className={styles.visualSmall}>Materials science × ML</span>
+            </>
+          )}
+          {scene.visualKey === "DALER" && (
+            <>
+              <span className={styles.visualSmall}>
+                Transformer-based strategies
+              </span>
+              <span className={styles.metric}>1.8</span>
+              <span className={styles.metricLabel}>Sharpe ratio</span>
+              <span className={styles.visualSmall}>Daler Trading</span>
+            </>
+          )}
+          {scene.visualKey === "BRISTOL" && (
+            <>
+              <span className={styles.visualSmall}>University of Bristol</span>
+              <span className={styles.visualType}>
+                Maths.
+                <br />
+                Computing.
+                <br />
+                <em>Systems.</em>
+              </span>
+              <span className={styles.visualSmall}>BEng → MSc</span>
+            </>
+          )}
+          {scene.visualKey === "HACKATHONS" && (
+            <>
+              <span className={styles.visualSmall}>IMC Prosperity</span>
+              <span className={styles.metric}>
+                107<span>th</span>
+              </span>
+              <span className={styles.metricLabel}>
+                Globally · 20,000+ teams
+              </span>
+              <div className={styles.logoGrid}>
+                {scene.visualGrid.map((src, index) => (
+                  <img
+                    key={src}
+                    src={src}
+                    alt={
+                      [
+                        "IMC",
+                        "OrionHack",
+                        "Morgan Stanley",
+                        "Anthropic",
+                        "10 Downing Street",
+                      ][index]
+                    }
+                    width="44"
+                    height="44"
+                    loading="lazy"
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
-          <h3 className={styles.headline}>{scene.headline}</h3>
-
-          <div className={styles.bodyWrap}>
-            {scene.body.map((p, i) => (
-              <p key={i} className={styles.body}>
-                {p}
-              </p>
+export default function Journey() {
+  const [active, setActive] = useState(0);
+  const tabRefs = useRef([]);
+  const reduce = useReducedMotion();
+  const onKey = (event, index) => {
+    let next;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown")
+      next = (index + 1) % journey.length;
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp")
+      next = (index - 1 + journey.length) % journey.length;
+    if (event.key === "Home") next = 0;
+    if (event.key === "End") next = journey.length - 1;
+    if (next === undefined) return;
+    event.preventDefault();
+    setActive(next);
+    tabRefs.current[next]?.focus();
+  };
+  return (
+    <section
+      className={`${styles.journey} section`}
+      id="journey"
+      aria-labelledby="journey-heading"
+    >
+      <div className="container">
+        <Reveal className={styles.heading}>
+          <h2 id="journey-heading">
+            The <em>journey.</em>
+          </h2>
+        </Reveal>
+        <div className={styles.layout}>
+          <div
+            className={styles.tabs}
+            role="tablist"
+            aria-label="Journey chapters"
+          >
+            {journey.map((scene, index) => (
+              <button
+                key={scene.serial}
+                ref={(el) => {
+                  tabRefs.current[index] = el;
+                }}
+                id={`chapter-tab-${scene.serial}`}
+                role="tab"
+                aria-selected={active === index}
+                aria-controls={`chapter-panel-${scene.serial}`}
+                tabIndex={active === index ? 0 : -1}
+                onKeyDown={(event) => onKey(event, index)}
+                onClick={() => setActive(index)}
+                className={`${styles.tab} ${active === index ? styles.selected : ""}`}
+              >
+                <span className={styles.tabNumber}>{scene.serial}</span>
+                <span>{scene.chapter}</span>
+                <FiArrowRight aria-hidden="true" />
+              </button>
             ))}
           </div>
-
-          {scene.news && scene.news.length > 0 && (
-            <>
-              <p className={styles.pillsLabel}>In the press</p>
-              <ul className={styles.newsCards}>
-                {scene.news.map((n) => (
-                  <li key={n.url} className={styles.newsCardWrap}>
-                    <button
-                      type="button"
-                      className={styles.newsCard}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(n.url, "_blank", "noopener,noreferrer");
-                      }}
-                      aria-label={`Read: ${n.title} (opens in new tab)`}
-                    >
-                      <span className={styles.newsThumb}>
-                        <img
-                          src={n.image}
-                          alt=""
-                          loading="lazy"
-                          className={styles.newsThumbImg}
-                        />
-                      </span>
-                      <span className={styles.newsCardBody}>
-                        <span className={styles.newsCardMeta}>
-                          {n.source} · {n.date}
-                        </span>
-                        <span className={styles.newsCardTitle}>{n.title}</span>
-                        <span className={styles.newsCardCta}>
-                          {n.cta || "Read article ↗"}
-                        </span>
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-
-          {scene.pills && scene.pills.length > 0 && (
-            <>
-              {scene.pillsLabel && (
-                <p className={styles.pillsLabel}>{scene.pillsLabel}</p>
-              )}
-              <ul
-                className={`${styles.pills} ${
-                  scene.pillsLabel ? styles.pillsWithLabel : ""
-                }`}
+          <div className={styles.panels}>
+            {journey.map((scene, index) => (
+              <div
+                key={scene.serial}
+                id={`chapter-panel-${scene.serial}`}
+                role="tabpanel"
+                aria-labelledby={`chapter-tab-${scene.serial}`}
+                hidden={active !== index}
+                tabIndex={0}
               >
-                {scene.pills.map((p) => {
-                  const isLink = typeof p === "object" && p.href;
-                  const label = typeof p === "string" ? p : p.label;
-                  return (
-                    <li key={label} className={styles.pillWrap}>
-                      {isLink ? (
-                        <a
-                          href={p.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`${styles.pill} ${styles.pillLink}`}
-                        >
-                          <span>{label}</span>
-                          <span aria-hidden="true">↗</span>
-                        </a>
-                      ) : (
-                        <span className={styles.pill}>{label}</span>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </>
-          )}
-        </div>
-
-        <div className={styles.visualCol}>
-          <div className={styles.visualStage}>
-            {Visual && (
-              <Visual progress={fullProgress} active={isActive} />
-            )}
+                {active === index && (
+                  <motion.div
+                    initial={{ opacity: 0.5, y: reduce ? 0 : 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Chapter scene={scene} />
+                  </motion.div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ProgressTrack({ activeIndex, total, visible }) {
-  const fillPct = total <= 1 ? 0 : (activeIndex / (total - 1)) * 100;
-  return (
-    <div
-      className={`${styles.progress} ${visible ? styles.progressVisible : ""}`}
-      aria-hidden="true"
-    >
-      <div className={styles.progressTrack}>
-        <div
-          className={styles.progressFill}
-          style={{ height: `${fillPct}%` }}
-        />
-      </div>
-      <div className={styles.progressTicks}>
-        {Array.from({ length: total }).map((_, i) => (
-          <span
-            key={i}
-            className={styles.tick}
-            style={{ opacity: i === activeIndex ? 1 : 0.3 }}
-          >
-            {String(i + 1).padStart(2, "0")}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Journey() {
-  const sectionRef = useRef(null);
-  const sceneRefs = useRef([]);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [journeyInView, setJourneyInView] = useState(false);
-  const N = journey.length;
-
-  // Stable refs array
-  if (sceneRefs.current.length !== N) {
-    sceneRefs.current = Array.from({ length: N }, () => React.createRef());
-  }
-
-  // Track whether the journey section is on screen (controls progress fade).
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => setJourneyInView(entry.intersectionRatio > 0.15),
-      { threshold: [0, 0.15, 0.5] }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  // Hook Lenis Snap into journey scenes + neighbouring section anchors,
-  // so snapping inside Journey is always to a scene, but scrolling past
-  // the last/first scene snaps cleanly into the next/previous section
-  // instead of trapping the user.
-  useEffect(() => {
-    if (prefersReducedMotion()) return;
-    let snap;
-    let removeFns = [];
-    const unsubscribe = subscribeLenis((lenis) => {
-      removeFns.forEach((fn) => fn?.());
-      removeFns = [];
-      if (!lenis) {
-        snap?.destroy();
-        snap = null;
-        setSnap(null);
-        return;
-      }
-      snap = new Snap(lenis, {
-        type: "proximity",
-        duration: 0.85,
-        easing: (t) => 1 - Math.pow(1 - t, 3),
-        debounce: 120,
-        velocityThreshold: 0.4,
-      });
-      setSnap(snap);
-      // Hero anchor and Selected Work anchor act as exits.
-      const hero = document.getElementById("top");
-      const work = document.getElementById("work");
-      if (hero) removeFns.push(snap.addElement(hero, { align: ["start"] }));
-      sceneRefs.current.forEach((r) => {
-        if (r.current)
-          removeFns.push(snap.addElement(r.current, { align: ["start"] }));
-      });
-      if (work) removeFns.push(snap.addElement(work, { align: ["start"] }));
-    });
-    return () => {
-      removeFns.forEach((fn) => fn?.());
-      snap?.destroy();
-      setSnap(null);
-      unsubscribe();
-    };
-  }, [N]);
-
-  // Active scene tracking via per-scene useInView (set by JourneyScene).
-  const sceneCallbacks = useMemo(
-    () => journey.map((_, i) => () => setActiveIndex(i)),
-    []
-  );
-
-  return (
-    <section className={styles.journey} id="journey" ref={sectionRef}>
-      {journey.map((s, i) => (
-        <JourneyScene
-          key={s.serial}
-          scene={s}
-          sceneRef={sceneRefs.current[i]}
-          active={activeIndex === i}
-          onActivate={sceneCallbacks[i]}
-        />
-      ))}
-
-      <ProgressTrack
-        activeIndex={activeIndex}
-        total={N}
-        visible={journeyInView}
-      />
     </section>
   );
 }
-
-export default Journey;

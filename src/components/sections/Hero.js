@@ -1,146 +1,99 @@
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import portrait from "../../Assets/profile_no_background.png";
+import React from "react";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useReducedMotion,
+} from "framer-motion";
+import { FiArrowDown, FiArrowUpRight } from "react-icons/fi";
+import portrait from "../../Assets/profile_no_background.webp";
 import styles from "./Hero.module.css";
 
-const NAME_EASE = [0.16, 1, 0.3, 1];
+const transition = { duration: 0.9, ease: [0.22, 1, 0.36, 1] };
 
-const marqueeItems = [
-  "Building Amara @ 01C",
-  "PhD in Applied Machine Learning @ Imperial",
-  "Best Research @ ISAM",
-  "Teaching Assistant of the Year @ Imperial",
-  "Dean's List × 2 @ Bristol",
-  "107th Global @ IMC Prosperity · 20,000+ teams",
-  "2nd place @ OrionHack",
-  "Top 10 @ Morgan Stanley Code to Give",
-  "Rewire the State @ 10 Downing Street",
-  "ex-Quant @ Daler Trading",
-];
-
-function PageCurtain() {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setOpen(true), 50);
-    return () => clearTimeout(t);
-  }, []);
+export default function Hero() {
+  const reduce = useReducedMotion();
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+  const x = useSpring(pointerX, { stiffness: 100, damping: 25 });
+  const y = useSpring(pointerY, { stiffness: 100, damping: 25 });
+  const enter = (delay = 0) => ({
+    initial: { opacity: 0, y: reduce ? 0 : 22 },
+    animate: { opacity: 1, y: 0 },
+    transition: { ...transition, delay: reduce ? 0 : delay },
+  });
+  const onMove = (e) => {
+    if (reduce || e.pointerType !== "mouse") return;
+    const bounds = e.currentTarget.getBoundingClientRect();
+    pointerX.set((e.clientX - bounds.left - bounds.width / 2) * 0.025);
+    pointerY.set((e.clientY - bounds.top - bounds.height / 2) * 0.025);
+  };
   return (
-    <AnimatePresence>
-      {!open && (
-        <motion.div
-          className={styles.curtain}
-          initial={{ y: 0 }}
-          animate={{ y: 0 }}
-          exit={{ y: "-100%" }}
-          transition={{ duration: 1.4, ease: NAME_EASE }}
-        >
-          <div className={styles.curtainInner}>
-            <span className={styles.curtainMark}>RW</span>
-            <span className={styles.curtainMeta}>RAYMOND · WONG · 2026</span>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
-
-function Hero() {
-  return (
-    <section className={styles.hero} id="top">
-      <PageCurtain />
-
+    <section
+      className={styles.hero}
+      id="top"
+      onPointerMove={onMove}
+      onPointerLeave={() => {
+        pointerX.set(0);
+        pointerY.set(0);
+      }}
+    >
       <div className={styles.inner}>
         <div className={styles.copy}>
-          <motion.span
-            className={styles.eyebrow}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.4, ease: NAME_EASE }}
-          >
-            Raymond Wong
-          </motion.span>
-
-          <motion.h1
-            className={styles.headline}
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.1, delay: 1.6, ease: NAME_EASE }}
-          >
-            Building <em>Amara</em>, generating <em>3D worlds</em> from a
-            single prompt.
-          </motion.h1>
-
-          <motion.p
-            className={styles.sub}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 2.0, ease: NAME_EASE }}
-          >
-            CTO @ <em>01C</em> · PhD in Applied ML @ <em>Imperial</em> ·
-            ex-quant @ Daler.
+          <motion.p className={styles.intro} {...enter()}>
+            <span className={styles.status} /> ML · Quant · PhD
           </motion.p>
-
-          <motion.div
-            className={styles.cta}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 2.3, ease: NAME_EASE }}
-          >
-            <a href="#journey" className={styles.ctaPrimary}>
-              <span>Take a look</span>
-              <span aria-hidden="true">↓</span>
+          <motion.h1 className={styles.name} {...enter(0.07)}>
+            Raymond
+            <br />
+            <span>Wong.</span>
+          </motion.h1>
+          <motion.p className={styles.headline} {...enter(0.16)}>
+            Building <em>Amara</em>, generating <em>3D worlds</em> from a single
+            prompt.
+          </motion.p>
+          <motion.p className={styles.sub} {...enter(0.23)}>
+            CTO @ 01C · PhD in Applied ML @ Imperial · ex-quant @ Daler.
+          </motion.p>
+          <motion.div className={styles.actions} {...enter(0.3)}>
+            <a href="#journey" className="button button-primary">
+              Take a look <FiArrowDown aria-hidden="true" />
             </a>
-            <a href="#work" className={styles.ctaSecondary}>
-              Selected work
-            </a>
-            <a href="/resume" className={styles.ctaSecondary}>
-              CV
+            <a href="#work" className="text-link">
+              Selected work <FiArrowUpRight aria-hidden="true" />
             </a>
           </motion.div>
         </div>
-
-        <motion.div
-          className={styles.portraitWrap}
-          initial={{ opacity: 0, scale: 0.94, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 1.6, delay: 1.6, ease: NAME_EASE }}
-        >
-          <div className={styles.portraitOrb}>
+        <motion.div className={styles.portraitStage} {...enter(0.18)}>
+          <div className={styles.orbit} aria-hidden="true" />
+          <div className={styles.orbitOuter} aria-hidden="true" />
+          <motion.div
+            className={styles.portraitFrame}
+            style={reduce ? undefined : { x, y }}
+          >
             <img
+              className={styles.portrait}
               src={portrait}
               alt="Raymond Wong"
-              className={styles.portrait}
-              decoding="async"
-              loading="eager"
+              width="1827"
+              height="1827"
+              fetchpriority="high"
             />
+          </motion.div>
+          <div className={styles.caption}>
+            <span className={styles.captionLine} />
+            <span>ML · Quant · PhD</span>
           </div>
         </motion.div>
       </div>
-
-      <motion.div
-        className={styles.marquee}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.4, delay: 2.5 }}
-        aria-hidden="true"
-      >
-        <div className={styles.marqueeTrack}>
-          {[...marqueeItems, ...marqueeItems].map((t, i) => (
-            <span key={i} className={styles.marqueeItem}>
-              <span>{t}</span>
-              <span className={styles.marqueeDot}>✦</span>
-            </span>
-          ))}
-        </div>
-      </motion.div>
-
-      <div className={styles.footer}>
+      <div className={styles.bottom}>
         <span>Scroll for the journey</span>
-        <span className={styles.footerLine} aria-hidden="true" />
-        <span>01 / Journey</span>
+        <a href="#journey">
+          <FiArrowDown aria-hidden="true" />
+          <span className="sr-only">Explore the journey</span>
+        </a>
+        <span>Research, quant, or 3D worlds.</span>
       </div>
     </section>
   );
 }
-
-export default Hero;

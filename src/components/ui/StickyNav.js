@@ -1,99 +1,113 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { FiArrowUpRight, FiX, FiMenu } from "react-icons/fi";
 import styles from "./StickyNav.module.css";
 
 const links = [
-  { href: "/#journey", label: "Journey" },
-  { href: "/#work", label: "Work" },
-  { href: "/#about", label: "About" },
-  { href: "/#contact", label: "Contact" },
-  { href: "/resume", label: "CV" },
+  { id: "journey", label: "Journey" },
+  { id: "work", label: "Work" },
+  { id: "about", label: "Research" },
+  { id: "contact", label: "Contact" },
 ];
 
-function StickyNav() {
-  const [scrolled, setScrolled] = useState(false);
+export default function StickyNav() {
   const [open, setOpen] = useState(false);
+  const [active, setActive] = useState("");
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-  const isLanding = location.pathname === "/";
-
+  const toggleRef = useRef(null);
+  const headerRef = useRef(null);
   useEffect(() => {
-    if (!isLanding) {
-      setScrolled(true);
-      return;
-    }
-    const onScroll = () => {
-      setScrolled(window.scrollY > 80);
+    setOpen(false);
+  }, [location]);
+  useEffect(() => {
+    const update = () => {
+      setScrolled(window.scrollY > 30);
+      let current = "";
+      links.forEach(({ id }) => {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= 180) current = id;
+      });
+      setActive(current);
     };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [isLanding]);
-
-  const handleAnchor = (e, href) => {
-    if (!href.startsWith("/#")) return;
-    const id = href.slice(2);
-    if (location.pathname === "/") {
-      e.preventDefault();
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.history.replaceState(null, "", `#${id}`);
-      setOpen(false);
-    }
-  };
-
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, [location.pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        toggleRef.current?.focus();
+      }
+    };
+    const onPointer = (event) => {
+      if (!headerRef.current?.contains(event.target)) setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointer);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointer);
+    };
+  }, [open]);
   return (
     <header
-      className={`${styles.nav} ${scrolled ? styles.scrolled : ""} ${
-        open ? styles.open : ""
-      }`}
+      ref={headerRef}
+      className={`${styles.nav} ${scrolled || open ? styles.scrolled : ""}`}
     >
       <div className={styles.inner}>
-        <Link to="/" className={styles.brand} onClick={() => setOpen(false)}>
-          <span className={styles.brandMark}>Raymond Wong</span>
-          <span className={styles.brandMeta}>ML · Quant · PhD</span>
+        <Link
+          to="/#top"
+          className={styles.brand}
+          aria-label="Raymond Wong, home"
+          onClick={() => setOpen(false)}
+        >
+          rw<span>.</span>
         </Link>
-
-        <nav className={styles.linksDesktop} aria-label="Primary">
-          {links.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              className={styles.link}
-              onClick={(e) => handleAnchor(e, l.href)}
+        <nav className={styles.desktop} aria-label="Primary">
+          {links.map(({ id, label }) => (
+            <Link
+              key={id}
+              to={`/#${id}`}
+              className={`${styles.link} ${active === id ? styles.active : ""}`}
+              aria-current={active === id ? "location" : undefined}
             >
-              {l.label}
-            </a>
+              {label}
+            </Link>
           ))}
         </nav>
-
-        <button
-          type="button"
-          className={styles.toggle}
-          aria-expanded={open}
-          aria-label="Toggle menu"
-          onClick={() => setOpen((o) => !o)}
-        >
-          <span />
-          <span />
-        </button>
+        <div className={styles.actions}>
+          <Link to="/resume" className={styles.cv}>
+            CV <FiArrowUpRight aria-hidden="true" />
+          </Link>
+          <button
+            ref={toggleRef}
+            className={styles.toggle}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-label={open ? "Close menu" : "Open menu"}
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <FiX /> : <FiMenu />}
+          </button>
+        </div>
       </div>
-
       {open && (
-        <nav className={styles.linksMobile} aria-label="Primary mobile">
-          {links.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              className={styles.linkMobile}
-              onClick={(e) => handleAnchor(e, l.href)}
-            >
-              {l.label}
-            </a>
+        <nav
+          id="mobile-menu"
+          className={styles.mobile}
+          aria-label="Mobile primary"
+        >
+          {links.map(({ id, label }) => (
+            <Link key={id} to={`/#${id}`} onClick={() => setOpen(false)}>
+              {label}
+              <FiArrowUpRight aria-hidden="true" />
+            </Link>
           ))}
         </nav>
       )}
     </header>
   );
 }
-
-export default StickyNav;

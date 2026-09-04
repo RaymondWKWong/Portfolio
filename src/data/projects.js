@@ -1,9 +1,9 @@
-import IMC from "../Assets/Projects/IMC.png";
-import MakaStory from "../Assets/Projects/makastory.png";
-import SignBridge from "../Assets/Projects/signbridge.png";
-import OrionHack from "../Assets/Projects/orionhack.png";
-import Gold from "../Assets/Projects/gold.png";
-import MetaAnalysis from "../Assets/Projects/meta-analysis.png";
+import IMC from "../Assets/Projects/IMC.webp";
+import MakaStory from "../Assets/Projects/makastory.webp";
+import SignBridge from "../Assets/Projects/signbridge.webp";
+import OrionHack from "../Assets/Projects/orionhack.webp";
+import Gold from "../Assets/Projects/gold.webp";
+import MetaAnalysis from "../Assets/Projects/meta-analysis.webp";
 
 export const projects = [
   {
@@ -36,7 +36,8 @@ export const projects = [
     summary:
       "Statistical and ML analysis of metal 3D-printing literature data. DNN, LightGBM, CatBoost. Sensitivity analysis for interpretation.",
     image: MetaAnalysis,
-    imageAlt: "Meta-analysis of literature data for metal additive manufacturing",
+    imageAlt:
+      "Meta-analysis of literature data for metal additive manufacturing",
     stack: ["Python", "DNN", "LightGBM", "CatBoost", "SHAP"],
     duration: "PhD · Imperial",
     outcome:
@@ -82,13 +83,21 @@ export const projects = [
       "Accessible story generator for children with impairments and mobility limitations. Text, speech, and sign-language input through a tailored ML model.",
     image: MakaStory,
     imageAlt: "MakaStory accessible story generator",
-    stack: ["React", "Python", "ML model", "Speech-to-text", "Sign-language CV"],
+    stack: [
+      "React",
+      "Python",
+      "ML model",
+      "Speech-to-text",
+      "Sign-language CV",
+    ],
     duration: "5 days · Code to Give",
     outcome:
       "Top 10 out of all teams at Morgan Stanley's Code to Give. Demoed to non-profit partners and Morgan Stanley judges.",
     details:
       "A web app that generates illustrated stories for children with mobility or speech impairments. Accepts text, speech, or sign-language input, routed through a tailored ML pipeline that produces age-appropriate narrative text and matched illustrations.",
-    links: [{ label: "GitHub", href: "https://github.com/ruihanjc/CodeToGive" }],
+    links: [
+      { label: "GitHub", href: "https://github.com/ruihanjc/CodeToGive" },
+    ],
   },
   {
     serial: "05",
