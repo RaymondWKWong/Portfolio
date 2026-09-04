@@ -5,7 +5,7 @@
   --paper-3: #fbfbfd;
   --ink: #1d1d1f; /* Apple primary text */
   --ink-soft: #2d2d2f;
-  --muted: #86868b; /* Apple secondary text */
+  --muted: #6e6e73; /* Apple secondary text */
   --muted-strong: #6e6e73;
   --rule: #d2d2d7; /* Apple hairline */
   --rule-strong: #c7c7cc;
@@ -16,12 +16,13 @@
 
   /* Apple uses SF Pro; -apple-system resolves to it on Apple devices,
      with Helvetica Neue / Arial as the cross-platform fallback. */
-  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+  --sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
     "Helvetica Neue", Helvetica, Arial, sans-serif;
   --serif: var(--sans);
   --mono: "SF Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --step--1: clamp(0.78rem, 0.76rem + 0.1vw, 0.85rem);
+  --step--1: 0.8125rem;
   --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
   --step-1: clamp(1.125rem, 1.06rem + 0.3vw, 1.25rem);
   --step-2: clamp(1.35rem, 1.2rem + 0.6vw, 1.6rem);
@@ -44,7 +45,7 @@
   --space-10: 160px;
 
   --measure: 38ch;
-  --container: min(1240px, 100% - 48px);
+  --container: min(1320px, 100% - clamp(40px, 8vw, 128px));
   --container-tight: min(880px, 100% - 48px);
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -57,7 +58,8 @@
   --glass-hairline: rgba(17, 17, 24, 0.07);
   --glass-blur: blur(22px) saturate(1.7);
   --glass-blur-soft: blur(14px) saturate(1.5);
-  --glass-shadow: 0 22px 48px -30px rgba(24, 24, 40, 0.4),
+  --glass-shadow:
+    0 22px 48px -30px rgba(24, 24, 40, 0.4),
     0 2px 8px -4px rgba(24, 24, 40, 0.12);
   --glass-sheen: inset 0 1px 0 rgba(255, 255, 255, 0.85);
 

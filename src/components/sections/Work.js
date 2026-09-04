@@ -3,6 +3,7 @@ import SectionLabel from "../ui/SectionLabel";
 import Hairline from "../ui/Hairline";
 import Reveal from "../ui/Reveal";
 import ProjectCase from "./ProjectCase";
+import { prefersReducedMotion } from "../../lib/motion";
 import { projects } from "../../data/projects";
 import styles from "./Work.module.css";
 
@@ -38,7 +39,10 @@ function Work() {
     const step = firstCard
       ? firstCard.offsetWidth + 24
       : grid.clientWidth * 0.6;
-    grid.scrollBy({ left: direction * step, behavior: "smooth" });
+    grid.scrollBy({
+      left: direction * step,
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
   };
 
   return (
@@ -84,7 +88,8 @@ function Work() {
             canLeft ? styles.scrollBtnShow : ""
           }`}
           onClick={() => scrollByCard(-1)}
-          aria-label="Scroll left"
+          aria-label="Previous projects"
+          disabled={!canLeft}
           tabIndex={canLeft ? 0 : -1}
         >
           <span aria-hidden="true">←</span>
@@ -95,7 +100,8 @@ function Work() {
             canRight ? styles.scrollBtnShow : ""
           }`}
           onClick={() => scrollByCard(1)}
-          aria-label="Scroll right"
+          aria-label="Next projects"
+          disabled={!canRight}
           tabIndex={canRight ? 0 : -1}
         >
           <span aria-hidden="true">→</span>

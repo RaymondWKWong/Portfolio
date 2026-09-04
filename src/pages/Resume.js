@@ -12,7 +12,7 @@ import styles from "./Resume.module.css";
 // link is the guaranteed fallback.
 function Resume() {
   return (
-    <main className={styles.page}>
+    <main id="main" className={styles.page}>
       <div className={styles.head}>
         <Link to="/" className={styles.back}>
           <FiArrowLeft aria-hidden="true" /> Back

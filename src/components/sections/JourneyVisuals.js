@@ -1,6 +1,10 @@
 import React, { lazy, Suspense } from "react";
-import { motion, useTransform, AnimatePresence } from "framer-motion";
-import { getLenis } from "../../lib/lenis";
+import {
+  motion,
+  useTransform,
+  AnimatePresence,
+  useReducedMotion,
+} from "framer-motion";
 import LogoIMC from "../../Assets/Logos/IMC_Logo.jpg";
 import LogoOrionHack from "../../Assets/Logos/OrionHack_Logo.jpg";
 import LogoMorganStanley from "../../Assets/Logos/MorganStanleyLogo.jpg";
@@ -17,10 +21,10 @@ import LiOrion from "../../Assets/LinkedIn/orion.jpg";
 import LiAnthropic from "../../Assets/LinkedIn/anthropic.jpg";
 import LiManGroup from "../../Assets/LinkedIn/mangroup.jpg";
 import LiDowning from "../../Assets/LinkedIn/downing.jpg";
-import PhotoMakaStory from "../../Assets/Projects/makastory.png";
+import PhotoMakaStory from "../../Assets/Projects/makastory.webp";
 import PhotoQuantMindsHack from "../../Assets/QuantMinds_Hackathon_03.jpg";
 import PhotoQuantMindsConf from "../../Assets/quantminds-conference.jpeg";
-import Avatar from "../../Assets/profile_no_background.png";
+import Avatar from "../../Assets/profile_no_background.webp";
 import { FaLinkedin } from "react-icons/fa";
 import hk from "./Hackathons.module.css";
 
@@ -118,13 +122,22 @@ function FadeText({ progress, start, end, children, ...rest }) {
 
 // Continuous breathing — scale only. Y-translate removed because sub-pixel
 // rounding on big SVG groups was causing edge flicker.
-function Breathe({ children, intensity = 1, duration = 18, rotate = false }) {
+function Breathe({
+  children,
+  intensity = 1,
+  duration = 18,
+  rotate = false,
+  active = true,
+}) {
+  const reduced = useReducedMotion();
   return (
     <motion.g
       animate={
-        rotate
-          ? { rotate: [0, 360], scale: [1, 1.015 * intensity, 1] }
-          : { scale: [1, 1.015 * intensity, 0.995, 1] }
+        reduced || !active
+          ? { scale: 1, rotate: 0 }
+          : rotate
+            ? { rotate: [0, 360], scale: [1, 1.015 * intensity, 1] }
+            : { scale: [1, 1.015 * intensity, 0.995, 1] }
       }
       transition={{
         duration,
@@ -203,13 +216,69 @@ function FiringNeurons() {
   // "the network is alive" without overloading the canvas.
   const FIRINGS = [
     { fromX: 60, fromY: 70, toX: 130, toY: 80, dur: 1.3, delay: 0.0, gap: 2.4 },
-    { fromX: 60, fromY: 130, toX: 130, toY: 140, dur: 1.4, delay: 0.4, gap: 2.6 },
-    { fromX: 60, fromY: 190, toX: 130, toY: 200, dur: 1.3, delay: 0.9, gap: 2.8 },
-    { fromX: 130, fromY: 110, toX: 207, toY: 100, dur: 1.5, delay: 0.3, gap: 2.2 },
-    { fromX: 130, fromY: 170, toX: 207, toY: 180, dur: 1.4, delay: 0.7, gap: 2.5 },
-    { fromX: 130, fromY: 230, toX: 207, toY: 220, dur: 1.5, delay: 1.1, gap: 2.7 },
-    { fromX: 207, fromY: 140, toX: 273, toY: 140, dur: 1.6, delay: 0.5, gap: 2.0 },
-    { fromX: 207, fromY: 180, toX: 273, toY: 180, dur: 1.6, delay: 1.2, gap: 2.3 },
+    {
+      fromX: 60,
+      fromY: 130,
+      toX: 130,
+      toY: 140,
+      dur: 1.4,
+      delay: 0.4,
+      gap: 2.6,
+    },
+    {
+      fromX: 60,
+      fromY: 190,
+      toX: 130,
+      toY: 200,
+      dur: 1.3,
+      delay: 0.9,
+      gap: 2.8,
+    },
+    {
+      fromX: 130,
+      fromY: 110,
+      toX: 207,
+      toY: 100,
+      dur: 1.5,
+      delay: 0.3,
+      gap: 2.2,
+    },
+    {
+      fromX: 130,
+      fromY: 170,
+      toX: 207,
+      toY: 180,
+      dur: 1.4,
+      delay: 0.7,
+      gap: 2.5,
+    },
+    {
+      fromX: 130,
+      fromY: 230,
+      toX: 207,
+      toY: 220,
+      dur: 1.5,
+      delay: 1.1,
+      gap: 2.7,
+    },
+    {
+      fromX: 207,
+      fromY: 140,
+      toX: 273,
+      toY: 140,
+      dur: 1.6,
+      delay: 0.5,
+      gap: 2.0,
+    },
+    {
+      fromX: 207,
+      fromY: 180,
+      toX: 273,
+      toY: 180,
+      dur: 1.6,
+      delay: 1.2,
+      gap: 2.3,
+    },
   ];
   return (
     <>
@@ -242,7 +311,7 @@ export function BristolVisual({ progress, active }) {
 
   return (
     <svg viewBox="0 0 400 300" className="visualSvg" aria-hidden="true">
-      <Breathe duration={16} intensity={0.4}>
+      <Breathe active={active} duration={16} intensity={0.4}>
         {/* eyebrow + bottom equation */}
         <FadeText
           progress={progress}
@@ -347,7 +416,7 @@ export function BristolVisual({ progress, active }) {
               start={0.42 + (i + j) * 0.004}
               weight={w(i, j, 1)}
             />
-          ))
+          )),
         )}
         {/* edges L2 → L3 */}
         {L2.flatMap((y1, i) =>
@@ -362,7 +431,7 @@ export function BristolVisual({ progress, active }) {
               start={0.5 + (i + j) * 0.004}
               weight={w(i, j, 2)}
             />
-          ))
+          )),
         )}
         {/* edges L3 → L4 */}
         {L3.flatMap((y1, i) =>
@@ -377,7 +446,7 @@ export function BristolVisual({ progress, active }) {
               start={0.55 + (i + j) * 0.005}
               weight={w(i, j, 3)}
             />
-          ))
+          )),
         )}
 
         {/* firing-neuron loop — mount-gated so it restarts on re-entry */}
@@ -471,7 +540,8 @@ function buildStepResponse() {
     const y =
       1 -
       Math.exp(-zeta * omega * time) *
-        (Math.cos(wd * time) + (zeta / Math.sqrt(1 - zeta * zeta)) * Math.sin(wd * time));
+        (Math.cos(wd * time) +
+          (zeta / Math.sqrt(1 - zeta * zeta)) * Math.sin(wd * time));
     const px = X0 + t * W;
     const py = baseY - y * (baseY - SP_Y);
     points.push([px, py]);
@@ -573,7 +643,7 @@ function GainTerm({ progress, x, y, sub, delay, color = STROKE }) {
 export function ImperialVisual({ progress, active }) {
   return (
     <svg viewBox="0 0 400 300" className="visualSvg" aria-hidden="true">
-      <Breathe duration={16} intensity={0.4}>
+      <Breathe active={active} duration={16} intensity={0.4}>
         <FadeText
           progress={progress}
           start={0}
@@ -710,34 +780,33 @@ function PIDEquation({ progress, delay }) {
       <tspan fontStyle="italic">u</tspan>
       <tspan>(</tspan>
       <tspan fontStyle="italic">t</tspan>
-      <tspan>)  =  K</tspan>
+      <tspan>) = K</tspan>
       <tspan fontSize="9" dy="3">
         p
       </tspan>
-      <tspan dy="-3">  </tspan>
+      <tspan dy="-3"> </tspan>
       <tspan fontStyle="italic">e</tspan>
       <tspan>(</tspan>
       <tspan fontStyle="italic">t</tspan>
-      <tspan>)  +  K</tspan>
+      <tspan>) + K</tspan>
       <tspan fontSize="9" dy="3">
         i
       </tspan>
-      <tspan dy="-3">  ∫ </tspan>
+      <tspan dy="-3"> ∫ </tspan>
       <tspan fontStyle="italic">e</tspan>
       <tspan>(τ) </tspan>
       <tspan fontStyle="italic">d</tspan>
-      <tspan>τ  +  K</tspan>
+      <tspan>τ + K</tspan>
       <tspan fontSize="9" dy="3">
         d
       </tspan>
-      <tspan dy="-3">  </tspan>
+      <tspan dy="-3"> </tspan>
       <tspan fontStyle="italic">de</tspan>
       <tspan>/</tspan>
       <tspan fontStyle="italic">dt</tspan>
     </motion.text>
   );
 }
-
 
 // ─── Daler — candlesticks + LSTM forecast ────────────────────────
 function Candle({ progress, candle, start }) {
@@ -824,7 +893,7 @@ export function DalerVisual({ progress, active }) {
 
   return (
     <svg viewBox="0 0 400 300" className="visualSvg" aria-hidden="true">
-      <Breathe duration={15} intensity={0.6}>
+      <Breathe active={active} duration={15} intensity={0.6}>
         <PathLine
           progress={progress}
           start={0}
@@ -867,10 +936,34 @@ export function DalerVisual({ progress, active }) {
         />
 
         {/* Trade signals fire on the chart after the forecast lands */}
-        <SignalMark progress={progress} x={95} y={210} type="buy" delay={0.78} />
-        <SignalMark progress={progress} x={170} y={125} type="sell" delay={0.81} />
-        <SignalMark progress={progress} x={245} y={135} type="buy" delay={0.84} />
-        <SignalMark progress={progress} x={295} y={70} type="sell" delay={0.87} />
+        <SignalMark
+          progress={progress}
+          x={95}
+          y={210}
+          type="buy"
+          delay={0.78}
+        />
+        <SignalMark
+          progress={progress}
+          x={170}
+          y={125}
+          type="sell"
+          delay={0.81}
+        />
+        <SignalMark
+          progress={progress}
+          x={245}
+          y={135}
+          type="buy"
+          delay={0.84}
+        />
+        <SignalMark
+          progress={progress}
+          x={295}
+          y={70}
+          type="sell"
+          delay={0.87}
+        />
 
         {/* PnL pill, top-right corner clear of any signals */}
         <PnLTag progress={progress} x={363} y={28} delay={0.9} value="+18.4%" />
@@ -886,18 +979,20 @@ function SignalMark({ progress, x, y, type, delay }) {
   const op = useTransform(progress, [delay, delay + 0.06], [0, 1]);
   const scale = useTransform(progress, [delay, delay + 0.06], [0.4, 1]);
   const color = type === "buy" ? SIGNAL_BUY : SIGNAL_SELL;
-  const arrow = type === "buy" ? "M -4 4 L 0 -4 L 4 4 Z" : "M -4 -4 L 0 4 L 4 -4 Z";
+  const arrow =
+    type === "buy" ? "M -4 4 L 0 -4 L 4 4 Z" : "M -4 -4 L 0 4 L 4 -4 Z";
   const labelY = type === "buy" ? y + 18 : y - 14;
   return (
-    <motion.g
-      style={{ opacity: op, scale, transformOrigin: `${x}px ${y}px` }}
-    >
-      <circle cx={x} cy={y} r="7" fill="var(--paper)" stroke={color} strokeWidth="1.4" />
-      <path
-        d={arrow}
-        fill={color}
-        transform={`translate(${x} ${y})`}
+    <motion.g style={{ opacity: op, scale, transformOrigin: `${x}px ${y}px` }}>
+      <circle
+        cx={x}
+        cy={y}
+        r="7"
+        fill="var(--paper)"
+        stroke={color}
+        strokeWidth="1.4"
       />
+      <path d={arrow} fill={color} transform={`translate(${x} ${y})`} />
       <text
         x={x}
         y={labelY}
@@ -948,7 +1043,12 @@ function GridDot({ progress, x, y, start }) {
   const op = useTransform(progress, [start, start + 0.04, 1], [0, 0.4, 0.4]);
   const r = useTransform(progress, [start, start + 0.04], [0, 1]);
   return (
-    <motion.circle cx={x} cy={y} fill={STROKE_SOFT} style={{ opacity: op, r }} />
+    <motion.circle
+      cx={x}
+      cy={y}
+      fill={STROKE_SOFT}
+      style={{ opacity: op, r }}
+    />
   );
 }
 
@@ -972,7 +1072,7 @@ function PromptLink({ progress, ox, oy, delay }) {
   const op = useTransform(
     progress,
     [delay, delay + 0.05, 0.95, 1],
-    [0, 0.4, 0.4, 0.3]
+    [0, 0.4, 0.4, 0.3],
   );
   return (
     <motion.line
@@ -1116,7 +1216,7 @@ function SpawnedObject({ progress, cx, cy, kind, delay, size, idx, spin }) {
   const scale = useTransform(
     progress,
     [delay + 0.04, delay + 0.12, 1],
-    [0, 1, 1]
+    [0, 1, 1],
   );
   const Shape = WIRE_SHAPES[kind] || WireCube;
   const rotateDir = spin ? 360 : -360;
@@ -1155,18 +1255,14 @@ function SpawnedObject({ progress, cx, cy, kind, delay, size, idx, spin }) {
   );
 }
 
-export function ZeroOneCVisual({ progress }) {
+export function ZeroOneCVisual({ progress, active }) {
   const promptR = useTransform(progress, [0, 0.06], [0, 6]);
   const promptOp = useTransform(progress, [0, 0.06], [0, 1]);
-  const promptRingOp = useTransform(
-    progress,
-    [0.05, 0.18, 1],
-    [0, 0.45, 0.45]
-  );
+  const promptRingOp = useTransform(progress, [0.05, 0.18, 1], [0, 0.45, 0.45]);
   const promptRingScale = useTransform(
     progress,
     [0.05, 0.5, 1],
-    [0.4, 1.6, 1.2]
+    [0.4, 1.6, 1.2],
   );
   const labelOp = useTransform(progress, [0.7, 0.85], [0, 1]);
   const gridOp = useTransform(progress, [0.04, 0.18, 1], [0, 1, 1]);
@@ -1212,7 +1308,7 @@ export function ZeroOneCVisual({ progress }) {
         ))}
       </motion.g>
 
-      <Breathe duration={18} intensity={0.5}>
+      <Breathe active={active} duration={18} intensity={0.5}>
         {/* center prompt, ink-black core */}
         <motion.circle
           cx="200"
@@ -1290,12 +1386,12 @@ function Medal({ progress, item, index, start, clipId, isActive, onClick }) {
   const ringOpacity = useTransform(
     progress,
     [settle, settle + 0.1, 1],
-    [0, 0.6, 0.6]
+    [0, 0.6, 0.6],
   );
   const labelOp = useTransform(
     progress,
     [settle + 0.05, settle + 0.14],
-    [0, 1]
+    [0, 1],
   );
 
   return (
@@ -1303,13 +1399,26 @@ function Medal({ progress, item, index, start, clipId, isActive, onClick }) {
       data-medal=""
       style={{ y: dropY, opacity: op, cursor: "pointer" }}
       onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onClick(event);
+        }
+      }}
       whileHover={{ scale: 1.06 }}
       animate={{ scale: isActive ? 1.12 : 1 }}
       transition={{ type: "spring", stiffness: 320, damping: 22 }}
       tabIndex={0}
       role="button"
-      aria-label={`${item.label} ${item.rank || ""}`}
+      aria-label={`View ${item.title}`}
     >
+      <rect
+        x={item.x - 22}
+        y="156"
+        width="44"
+        height="100"
+        fill="transparent"
+      />
       <line
         x1={item.x}
         y1={172}
@@ -1419,12 +1528,7 @@ function HackathonsPulses({ items }) {
   return (
     <>
       {items.map((it, i) => (
-        <MedalGlowRing
-          key={`mgr-${i}`}
-          x={it.x}
-          y={202}
-          delay={i * 0.45}
-        />
+        <MedalGlowRing key={`mgr-${i}`} x={it.x} y={202} delay={i * 0.45} />
       ))}
     </>
   );
@@ -1432,6 +1536,9 @@ function HackathonsPulses({ items }) {
 
 export function HackathonsVisual({ progress, active }) {
   const [openIdx, setOpenIdx] = React.useState(null);
+  React.useEffect(() => {
+    if (!active) setOpenIdx(null);
+  }, [active]);
   const items = [
     {
       x: 70,
@@ -1441,7 +1548,8 @@ export function HackathonsVisual({ progress, active }) {
       title: "IMC Prosperity Trading",
       date: "April 2025 · 15 days",
       result: "107th globally · 9th UK · 13,000+ teams",
-      blurb: "Live algorithmic trading. Market making, statistical arbitrage, Black-Scholes options pricing, delta hedging.",
+      blurb:
+        "Live algorithmic trading. Market making, statistical arbitrage, Black-Scholes options pricing, delta hedging.",
       stack: ["Python", "NumPy", "Black-Scholes"],
       linkedin: "7321262190555009026",
       caption: CAPTIONS.imc,
@@ -1455,7 +1563,8 @@ export function HackathonsVisual({ progress, active }) {
       title: "OrionHack",
       date: "2023 · 2 days",
       result: "2nd place / 250+ teams",
-      blurb: "LSTM model forecasting collision risk between satellites and orbital debris, with live-data visualisation.",
+      blurb:
+        "LSTM model forecasting collision risk between satellites and orbital debris, with live-data visualisation.",
       stack: ["Python", "PyTorch", "LSTM", "WebGL"],
       linkedin: "7091848307957710848",
       caption: CAPTIONS.orion,
@@ -1469,7 +1578,8 @@ export function HackathonsVisual({ progress, active }) {
       title: "Morgan Stanley · Code to Give",
       date: "2023 · 5 days",
       result: "Top 10",
-      blurb: "MakaStory: accessible story generator for children with impairments. Text, speech, and sign-language input.",
+      blurb:
+        "MakaStory: accessible story generator for children with impairments. Text, speech, and sign-language input.",
       stack: ["React", "Python", "ML model"],
       images: [PhotoMakaStory],
       fit: "contain",
@@ -1481,7 +1591,8 @@ export function HackathonsVisual({ progress, active }) {
       title: "Anthropic Agents Hackathon",
       date: "2025 · 1 day",
       result: "Selected participant",
-      blurb: "Built tool-using agents on Claude with multi-step planning and structured outputs.",
+      blurb:
+        "Built tool-using agents on Claude with multi-step planning and structured outputs.",
       stack: ["Claude API", "Python", "TypeScript"],
       linkedin: "7341794417931874305",
       caption: CAPTIONS.anthropic,
@@ -1507,7 +1618,8 @@ export function HackathonsVisual({ progress, active }) {
       title: "QuantMinds TradeEntry",
       date: "2024 · 2 days · London",
       result: "Selected participant",
-      blurb: "Conference-side trading hackathon, live execution against benchmark strategies.",
+      blurb:
+        "Conference-side trading hackathon, live execution against benchmark strategies.",
       stack: ["Python", "Backtester"],
       images: [PhotoQuantMindsHack, PhotoQuantMindsConf],
     },
@@ -1518,7 +1630,8 @@ export function HackathonsVisual({ progress, active }) {
       title: "10 Downing Street · Rewire the State",
       date: "2025 · 2 days",
       result: "Selected participant",
-      blurb: "Government-tech hackathon: building public-sector tooling with cross-department data.",
+      blurb:
+        "Government-tech hackathon: building public-sector tooling with cross-department data.",
       stack: ["Python", "Web", "GovData"],
       linkedin: "7374707140260954113",
       caption: CAPTIONS.downing,
@@ -1528,8 +1641,13 @@ export function HackathonsVisual({ progress, active }) {
   const open = openIdx !== null;
   return (
     <>
-      <svg viewBox="0 0 400 300" className="visualSvg" aria-hidden="true">
-        <Breathe duration={14} intensity={0.4}>
+      <svg
+        viewBox="0 0 400 300"
+        className="visualSvg"
+        role="group"
+        aria-label="Hackathon achievements"
+      >
+        <Breathe active={active} duration={14} intensity={0.4}>
           <line
             x1="50"
             y1="222"
@@ -1563,10 +1681,7 @@ export function HackathonsVisual({ progress, active }) {
           full-page modal), so it reads as an in-place expansion. */}
       <AnimatePresence>
         {open && (
-          <MedalPanel
-            item={items[openIdx]}
-            onClose={() => setOpenIdx(null)}
-          />
+          <MedalPanel item={items[openIdx]} onClose={() => setOpenIdx(null)} />
         )}
       </AnimatePresence>
     </>
@@ -1584,7 +1699,7 @@ function renderCaption(text) {
       </span>
     ) : (
       part
-    )
+    ),
   );
 }
 
@@ -1604,13 +1719,7 @@ function Post({ item }) {
       </div>
       <p className={hk.postBody}>{renderCaption(item.caption)}</p>
       {(item.images || []).map((src, i) => (
-        <img
-          key={i}
-          className={hk.postImg}
-          src={src}
-          alt=""
-          loading="lazy"
-        />
+        <img key={i} className={hk.postImg} src={src} alt="" loading="lazy" />
       ))}
       <a
         className={hk.postLink}
@@ -1632,6 +1741,8 @@ function MedalPanel({ item, onClose }) {
   closeRef.current = onClose;
 
   React.useEffect(() => {
+    const opener = document.activeElement;
+    panelRef.current?.querySelector("button")?.focus({ preventScroll: true });
     const onKey = (e) => {
       if (e.key === "Escape") closeRef.current();
     };
@@ -1644,11 +1755,10 @@ function MedalPanel({ item, onClose }) {
     };
     window.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onDown, true);
-    getLenis()?.stop?.();
     return () => {
       window.removeEventListener("keydown", onKey);
       document.removeEventListener("pointerdown", onDown, true);
-      getLenis()?.start?.();
+      opener?.focus({ preventScroll: true });
     };
   }, []);
 
@@ -1674,58 +1784,61 @@ function MedalPanel({ item, onClose }) {
       <div className={hk.panelTrack}>
         <motion.div
           ref={panelRef}
+          role="dialog"
+          aria-label={item.title}
+          aria-modal="false"
           className={hk.embed}
           data-lenis-prevent
           initial={{ opacity: 0, y: 12, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.34, ease: CARD_EASE }}
         >
-        <button
-          type="button"
-          className={hk.close}
-          onClick={onClose}
-          aria-label="Close"
-        >
-          ✕
-        </button>
+          <button
+            type="button"
+            className={hk.close}
+            onClick={onClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
 
-        <div className={hk.embedHead}>
-          {item.logo && (
-            <span className={hk.logo}>
-              <img src={item.logo} alt="" />
-            </span>
+          <div className={hk.embedHead}>
+            {item.logo && (
+              <span className={hk.logo}>
+                <img src={item.logo} alt="" />
+              </span>
+            )}
+            <div className={hk.embedHeadText}>
+              <strong className={hk.title}>{item.title}</strong>
+              {item.result && <span className={hk.result}>{item.result}</span>}
+            </div>
+          </div>
+
+          {item.caption ? (
+            <Post item={item} />
+          ) : shown.length > 0 ? (
+            <div className={`${hk.gallery} ${countClass}`}>
+              {shown.map((src, i) => (
+                <div key={i} className={hk.shot}>
+                  <img
+                    src={src}
+                    alt=""
+                    loading="lazy"
+                    className={hk.shotImg}
+                    style={{
+                      objectFit: item.fit || "cover",
+                      padding: item.fit === "contain" ? 12 : 0,
+                    }}
+                  />
+                  {i === shown.length - 1 && extra > 0 && (
+                    <span className={hk.more}>+{extra}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            item.blurb && <p className={hk.embedBlurb}>{item.blurb}</p>
           )}
-          <div className={hk.embedHeadText}>
-            <strong className={hk.title}>{item.title}</strong>
-            {item.result && <span className={hk.result}>{item.result}</span>}
-          </div>
-        </div>
-
-        {item.caption ? (
-          <Post item={item} />
-        ) : shown.length > 0 ? (
-          <div className={`${hk.gallery} ${countClass}`}>
-            {shown.map((src, i) => (
-              <div key={i} className={hk.shot}>
-                <img
-                  src={src}
-                  alt=""
-                  loading="lazy"
-                  className={hk.shotImg}
-                  style={{
-                    objectFit: item.fit || "cover",
-                    padding: item.fit === "contain" ? 12 : 0,
-                  }}
-                />
-                {i === shown.length - 1 && extra > 0 && (
-                  <span className={hk.more}>+{extra}</span>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          item.blurb && <p className={hk.embedBlurb}>{item.blurb}</p>
-        )}
 
           {item.stack && (
             <div className={hk.embedStack}>

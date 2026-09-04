@@ -1,15 +1,21 @@
 import React from "react";
-import { motion } from "framer-motion";
-import { fadeUp, viewport, reduceVariants } from "../../lib/motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { fadeUp, viewport } from "../../lib/motion";
 
-function Reveal({ as = "div", variants = fadeUp, className, children, ...rest }) {
+function Reveal({
+  as = "div",
+  variants = fadeUp,
+  className,
+  children,
+  ...rest
+}) {
   const Tag = motion[as] || motion.div;
-  const v = reduceVariants(variants);
+  const reduce = useReducedMotion();
   return (
     <Tag
       className={className}
-      variants={v}
-      initial="hidden"
+      variants={variants}
+      initial={reduce ? false : "hidden"}
       whileInView="show"
       viewport={viewport}
       {...rest}

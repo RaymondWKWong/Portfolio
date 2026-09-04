@@ -10,24 +10,28 @@ import Footer from "./components/Footer";
 import Landing from "./pages/Landing";
 import Resume from "./pages/Resume";
 import ScrollToTop from "./components/ScrollToTop";
-import { useSmoothScroll } from "./lib/lenis";
+import { MotionConfig } from "framer-motion";
 
 function App() {
-  useSmoothScroll();
   return (
-    <Router>
-      <ScrollToTop />
-      <StickyNav />
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/resume" element={<Resume />} />
-        <Route path="/about" element={<Navigate to="/#about" replace />} />
-        <Route path="/project" element={<Navigate to="/#work" replace />} />
-        <Route path="/projects" element={<Navigate to="/#work" replace />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      <Footer />
-    </Router>
+    <MotionConfig reducedMotion="user">
+      <Router>
+        <a className="skip-link" href="#main">
+          Skip to content
+        </a>
+        <ScrollToTop />
+        <StickyNav />
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/resume" element={<Resume />} />
+          <Route path="/about" element={<Navigate to="/#about" replace />} />
+          <Route path="/project" element={<Navigate to="/#work" replace />} />
+          <Route path="/projects" element={<Navigate to="/#work" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <Footer />
+      </Router>
+    </MotionConfig>
   );
 }
 

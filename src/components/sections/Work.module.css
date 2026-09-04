@@ -137,8 +137,11 @@
   z-index: 4;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease,
-    background-color 0.25s ease, border-color 0.25s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    background-color 0.25s ease,
+    border-color 0.25s ease;
 }
 
 .scrollBtnShow {
@@ -177,5 +180,63 @@
   }
   .scrollBtnRight {
     right: 6px;
+  }
+}
+.workSection {
+  padding-block: 96px 112px;
+  background: #fafafa;
+  border-top: 1px solid #e8e8ea;
+}
+.head {
+  margin-bottom: 34px;
+}
+.headRule {
+  display: none;
+}
+.grid {
+  padding-inline: max(
+    20px,
+    calc((100% - min(1320px, 100% - clamp(40px, 8vw, 128px))) / 2)
+  );
+  scroll-padding-inline: max(
+    20px,
+    calc((100% - min(1320px, 100% - clamp(40px, 8vw, 128px))) / 2)
+  );
+  padding-block: 10px 35px;
+}
+.grid > * {
+  width: clamp(320px, 32vw, 420px);
+}
+.gridFade {
+  display: none;
+}
+.scrollBtn {
+  opacity: 1;
+  pointer-events: auto;
+  top: auto;
+  bottom: -46px;
+  transform: none;
+  width: 44px;
+  height: 44px;
+  box-shadow: none;
+}
+.scrollBtnLeft {
+  left: auto;
+  right: max(78px, calc((100% - 1320px) / 2 + 58px));
+}
+.scrollBtnRight {
+  right: max(20px, calc((100% - 1320px) / 2));
+}
+@media (max-width: 640px) {
+  .workSection {
+    padding-block: 72px 106px;
+  }
+  .grid > * {
+    width: min(84vw, 380px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grid {
+    scroll-behavior: auto;
   }
 }

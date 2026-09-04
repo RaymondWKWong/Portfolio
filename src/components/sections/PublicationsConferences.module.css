@@ -93,7 +93,9 @@
   background-size: 100% 1px;
   background-repeat: no-repeat;
   background-position: 0 100%;
-  transition: background-image 0.3s ease, color 0.3s ease;
+  transition:
+    background-image 0.3s ease,
+    color 0.3s ease;
 }
 
 .pubLink:hover {
@@ -184,4 +186,18 @@
     grid-template-columns: 1fr;
     gap: var(--space-7);
   }
+}
+.wrap {
+  padding-block: 0;
+}
+.pubTitle {
+  font-size: 1.375rem;
+  line-height: 1.35;
+  letter-spacing: -0.025em;
+}
+.pubAuthors {
+  font-size: 0.8125rem;
+}
+.confName {
+  font-size: 0.9375rem;
 }

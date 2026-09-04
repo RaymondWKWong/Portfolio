@@ -15,8 +15,8 @@ function Contact() {
             <em>Let's talk.</em> Research, quant, or 3D worlds.
           </Reveal>
           <Reveal as="p" className={styles.lede}>
-            Always up for a coffee, a call, or a hackathon. Easiest way to
-            reach me is LinkedIn or GitHub. I read everything.
+            Always up for a coffee, a call, or a hackathon. Easiest way to reach
+            me is LinkedIn or GitHub. I read everything.
           </Reveal>
         </div>
 
@@ -28,7 +28,12 @@ function Contact() {
             <span>Email me</span>
             <FiArrowUpRight aria-hidden="true" />
           </a>
-          <a href={CV} target="_blank" rel="noopener noreferrer" className={styles.secondary}>
+          <a
+            href={CV}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.secondary}
+          >
             Download CV
           </a>
         </Reveal>

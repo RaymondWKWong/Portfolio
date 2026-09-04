@@ -68,7 +68,10 @@
   font-size: var(--step-1);
   letter-spacing: -0.005em;
   border-radius: 999px;
-  transition: background-color 0.3s ease, transform 0.3s ease, gap 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s ease,
+    gap 0.3s ease;
 }
 
 .primary:hover {
@@ -89,7 +92,9 @@
   padding: 18px 28px;
   border: 1px solid var(--rule-strong);
   border-radius: 999px;
-  transition: border-color 0.25s ease, background-color 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    background-color 0.25s ease;
 }
 
 .secondary:hover {
@@ -130,4 +135,17 @@
 
 .social:hover {
   opacity: 0.6;
+}
+.contact {
+  background: #f5f5f7;
+  border-top: 1px solid #e6e6e8;
+}
+.title {
+  font-size: clamp(2.6rem, 5.4vw, 4.5rem);
+  line-height: 1.07;
+  letter-spacing: -0.05em;
+}
+.title em {
+  font-style: normal;
+  font-weight: inherit;
 }

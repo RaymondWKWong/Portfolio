@@ -128,7 +128,10 @@
   font-size: var(--step-0);
   letter-spacing: -0.005em;
   border-radius: 999px;
-  transition: background-color 0.3s ease, transform 0.3s ease, gap 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s ease,
+    gap 0.3s ease;
 }
 
 .ctaPrimary:hover {
@@ -145,7 +148,9 @@
   padding: 14px 22px;
   border-radius: 999px;
   border: 1px solid var(--rule-strong);
-  transition: border-color 0.25s ease, background-color 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    background-color 0.25s ease;
 }
 
 .ctaSecondary:hover {
@@ -297,5 +302,152 @@
 @media (prefers-reduced-motion: reduce) {
   .marqueeTrack {
     animation: none;
+  }
+}
+/* Keep the original opening; give its type and portrait room to breathe. */
+.hero {
+  min-height: 100svh;
+  padding-top: 116px;
+  padding-bottom: 0;
+}
+.inner {
+  grid-template-columns: 1.6fr 1fr;
+  gap: 48px;
+  padding-block: 35px 72px;
+}
+.copy {
+  gap: 28px;
+}
+.eyebrow {
+  font-size: 0.875rem;
+  color: var(--ink);
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 500;
+}
+.headline {
+  font-size: clamp(3.2rem, 5.8vw, 5.5rem);
+  font-weight: 500;
+  line-height: 1.025;
+  letter-spacing: -0.055em;
+  max-width: 16ch;
+}
+.headline em {
+  letter-spacing: inherit;
+  font-weight: inherit;
+}
+.sub {
+  font-size: 1.125rem;
+  max-width: 39ch;
+}
+.portraitOrb {
+  width: clamp(240px, 29vw, 410px);
+  aspect-ratio: 1;
+}
+.portrait {
+  filter: none;
+}
+.cta {
+  gap: 12px;
+  margin-top: 8px;
+}
+.ctaPrimary {
+  padding: 14px 24px;
+  font-size: 0.9375rem;
+}
+.ctaSecondary {
+  padding: 14px 18px;
+  font-size: 0.9375rem;
+  border: 0;
+}
+.marquee {
+  background: #f6f6f6;
+  padding-block: 16px;
+  border-color: #e9e9e9;
+  margin-top: 0;
+}
+.marquee::before {
+  background: linear-gradient(to right, #f6f6f6, transparent);
+}
+.marquee::after {
+  background: linear-gradient(to left, #f6f6f6, transparent);
+  right: 42px;
+}
+.marqueeTrack {
+  animation-duration: 100s;
+}
+.marqueeItem {
+  font-size: 0.875rem;
+  color: #56565a;
+}
+.marquee:hover .marqueeTrack {
+  animation-play-state: paused !important;
+}
+.marqueeToggle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 48px;
+  font-size: 18px;
+  background: #f6f6f6;
+}
+.footer {
+  padding-block: 20px;
+  font-size: 0.75rem;
+}
+@media (max-width: 900px) {
+  .hero {
+    min-height: auto;
+  }
+  .inner {
+    grid-template-columns: 1.4fr 0.8fr;
+    gap: 24px;
+    padding-block: 24px 64px;
+  }
+  .portraitWrap {
+    order: initial;
+  }
+  .portraitOrb {
+    width: min(100%, 300px);
+  }
+  .headline {
+    font-size: clamp(2.8rem, 6vw, 4.5rem);
+  }
+}
+@media (max-width: 600px) {
+  .hero {
+    padding-top: 100px;
+  }
+  .inner {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding-bottom: 44px;
+  }
+  .copy {
+    gap: 22px;
+  }
+  .headline {
+    font-size: clamp(2.8rem, 11vw, 4rem);
+    max-width: 15ch;
+  }
+  .sub {
+    font-size: 1rem;
+  }
+  .portraitWrap {
+    order: initial;
+    align-items: flex-end;
+  }
+  .portraitOrb {
+    width: 190px;
+  }
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    text-align: left;
+  }
+  .footerLine {
+    display: none;
   }
 }
