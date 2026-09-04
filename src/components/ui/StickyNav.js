@@ -64,7 +64,7 @@ export default function StickyNav() {
           aria-label="Raymond Wong, home"
           onClick={() => setOpen(false)}
         >
-          rw<span>.</span>
+          Raymond Wong<span>ML · Quant · PhD</span>
         </Link>
         <nav className={styles.desktop} aria-label="Primary">
           {links.map(({ id, label }) => (

@@ -7,7 +7,7 @@ export default function AboutSection() {
     <section
       className={`${styles.about} section`}
       id="about"
-      aria-labelledby="research-heading"
+      aria-label="Publications and conferences"
     >
       <PublicationsConferences />
     </section>

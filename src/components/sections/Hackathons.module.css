@@ -43,7 +43,8 @@
   border: 1px solid var(--rule);
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 40px 90px -36px rgba(10, 12, 20, 0.42),
+  box-shadow:
+    0 40px 90px -36px rgba(10, 12, 20, 0.42),
     0 10px 26px -14px rgba(10, 12, 20, 0.22);
 }
 
@@ -303,7 +304,9 @@
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   box-shadow: 0 4px 12px -6px rgba(10, 12, 20, 0.3);
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .close:hover {
@@ -323,5 +326,29 @@
     margin-right: 0;
     max-width: 520px;
     max-height: 82vh;
+  }
+}
+.postBody {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.postHeadline,
+.result,
+.chip {
+  font-size: 0.75rem;
+}
+.embed {
+  max-height: min(76svh, 700px);
+}
+@media (max-width: 760px) {
+  .panelTrack {
+    grid-template-columns: 1fr;
+    width: min(460px, calc(100% - 32px));
+  }
+  .embed {
+    grid-column: auto;
+    margin-right: 0;
+    width: 100%;
+    max-width: none;
   }
 }

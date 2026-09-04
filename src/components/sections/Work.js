@@ -1,67 +1,114 @@
-import React, { useState } from "react";
-import { FiArrowUpRight } from "react-icons/fi";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import SectionLabel from "../ui/SectionLabel";
+import Hairline from "../ui/Hairline";
 import Reveal from "../ui/Reveal";
 import ProjectCase from "./ProjectCase";
+import { prefersReducedMotion } from "../../lib/motion";
 import { projects } from "../../data/projects";
 import styles from "./Work.module.css";
 
-export default function Work() {
-  const [selected, setSelected] = useState(null);
+function Work() {
+  const [openSerial, setOpenSerial] = useState(null);
+  const gridRef = useRef(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(true);
+
+  const updateScrollState = useCallback(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    setCanLeft(grid.scrollLeft > 4);
+    setCanRight(grid.scrollLeft + grid.clientWidth < grid.scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    updateScrollState();
+    grid.addEventListener("scroll", updateScrollState, { passive: true });
+    window.addEventListener("resize", updateScrollState);
+    return () => {
+      grid.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+  }, [updateScrollState]);
+
+  const scrollByCard = (direction) => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const firstCard = grid.firstElementChild;
+    const step = firstCard
+      ? firstCard.offsetWidth + 24
+      : grid.clientWidth * 0.6;
+    grid.scrollBy({
+      left: direction * step,
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
+  };
+
   return (
-    <section
-      className={`${styles.work} section`}
-      id="work"
-      aria-labelledby="work-heading"
-    >
-      <div className="container">
-        <Reveal className={styles.head}>
-          <div>
-            <h2 id="work-heading">
-              Selected <em>work.</em>
-            </h2>
-          </div>
-          <span className={styles.count}>2023 — 2025</span>
+    <section className={`${styles.work} ${styles.workSection}`} id="work">
+      <div className={styles.head}>
+        <Hairline className={styles.headRule} />
+        <Reveal className={styles.headLabel}>
+          <SectionLabel serial="02" label="Selected Work" />
         </Reveal>
-        <div className={styles.grid}>
-          {projects.map((project, index) => (
-            <Reveal
-              as="article"
-              className={styles.project}
-              key={project.serial}
-            >
-              <button
-                className={styles.card}
-                onClick={() => setSelected(project)}
-                aria-haspopup="dialog"
-                aria-label={`View ${project.title} project details`}
-              >
-                <span
-                  className={`${styles.imageWrap} ${styles[`image${index}`]}`}
-                >
-                  <img
-                    src={project.image}
-                    alt={project.imageAlt}
-                    loading="lazy"
-                    width="1000"
-                    height="650"
-                  />
-                  <span className={styles.openIcon}>
-                    <FiArrowUpRight aria-hidden="true" />
-                  </span>
-                  <span className={styles.viewLabel}>View project</span>
-                </span>
-                <span className={styles.meta}>
-                  <span className={styles.prestige}>{project.prestige}</span>
-                  <span className={styles.year}>{project.year}</span>
-                </span>
-                <span className={styles.title}>{project.title}</span>
-                <span className={styles.summary}>{project.summary}</span>
-              </button>
-            </Reveal>
+      </div>
+
+      <div className={styles.gridWrap}>
+        <div ref={gridRef} className={styles.grid}>
+          {projects.map((p, i) => (
+            <ProjectCase
+              key={p.serial}
+              project={p}
+              index={i}
+              isOpen={openSerial === p.serial}
+              onToggle={() =>
+                setOpenSerial((curr) => (curr === p.serial ? null : p.serial))
+              }
+            />
           ))}
         </div>
-        <ProjectCase project={selected} onClose={() => setSelected(null)} />
+
+        <div
+          className={`${styles.gridFade} ${styles.gridFadeLeft} ${
+            canLeft ? styles.gridFadeShow : ""
+          }`}
+          aria-hidden="true"
+        />
+        <div
+          className={`${styles.gridFade} ${styles.gridFadeRight} ${
+            canRight ? styles.gridFadeShow : ""
+          }`}
+          aria-hidden="true"
+        />
+
+        <button
+          type="button"
+          className={`${styles.scrollBtn} ${styles.scrollBtnLeft} ${
+            canLeft ? styles.scrollBtnShow : ""
+          }`}
+          onClick={() => scrollByCard(-1)}
+          aria-label="Previous projects"
+          disabled={!canLeft}
+          tabIndex={canLeft ? 0 : -1}
+        >
+          <span aria-hidden="true">←</span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.scrollBtn} ${styles.scrollBtnRight} ${
+            canRight ? styles.scrollBtnShow : ""
+          }`}
+          onClick={() => scrollByCard(1)}
+          aria-label="Next projects"
+          disabled={!canRight}
+          tabIndex={canRight ? 0 : -1}
+        >
+          <span aria-hidden="true">→</span>
+        </button>
       </div>
     </section>
   );
 }
+
+export default Work;

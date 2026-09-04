@@ -292,7 +292,7 @@ function Scene({ active, reduced }) {
   const gl = useThree((s) => s.gl);
   const [dayTex, cloudTex, specTex, normalTex, lightsTex] = useLoader(
     THREE.TextureLoader,
-    TEX_URLS
+    TEX_URLS,
   );
 
   // Configure textures (after commit, before paint — nothing is drawn until the
@@ -333,7 +333,7 @@ function Scene({ active, reduced }) {
         transparent: true,
         depthWrite: true,
       }),
-    [dayTex, specTex, normalTex, lightsTex, reduced]
+    [dayTex, specTex, normalTex, lightsTex, reduced],
   );
 
   const cloudMat = useMemo(
@@ -351,14 +351,16 @@ function Scene({ active, reduced }) {
         transparent: true,
         depthWrite: false,
       }),
-    [cloudTex, reduced]
+    [cloudTex, reduced],
   );
 
   const atmoMat = useMemo(
     () =>
       new THREE.ShaderMaterial({
         uniforms: {
-          uAtmoColor: { value: new THREE.Color(ATMO_HEX).convertSRGBToLinear() },
+          uAtmoColor: {
+            value: new THREE.Color(ATMO_HEX).convertSRGBToLinear(),
+          },
           uGold: { value: new THREE.Color(GOLD_HEX).convertSRGBToLinear() },
           uSunWorld: { value: SUN_DIR.clone() },
           uIntensity: { value: 0 },
@@ -370,12 +372,11 @@ function Scene({ active, reduced }) {
         side: THREE.BackSide,
         blending: THREE.AdditiveBlending,
       }),
-    []
+    [],
   );
 
   const stars = useMemo(() => {
-    const isMobile =
-      typeof window !== "undefined" && window.innerWidth < 768;
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
     const count = isMobile ? 700 : 1300;
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
@@ -395,7 +396,8 @@ function Scene({ active, reduced }) {
       colors[i * 3] = c.r;
       colors[i * 3 + 1] = c.g;
       colors[i * 3 + 2] = c.b;
-      sizes[i] = (Math.random() < 0.08 ? 2.3 : 1.0) * (0.6 + Math.random() * 0.9);
+      sizes[i] =
+        (Math.random() < 0.08 ? 2.3 : 1.0) * (0.6 + Math.random() * 0.9);
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
@@ -629,11 +631,16 @@ export default function Earth3D({ active }) {
   const reduced = useMemo(() => prefersReducedMotion(), []);
 
   return (
-    <div className={styles.wrap} aria-hidden="true">
+    <div className={styles.wrap} data-earth="" aria-hidden="true">
       <Canvas
+        frameloop={active ? "always" : "never"}
         dpr={[1, 1.75]}
         camera={{ position: [0, 0.4, 5.6], fov: 30 }}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        gl={{
+          antialias: true,
+          alpha: true,
+          powerPreference: "high-performance",
+        }}
       >
         <React.Suspense fallback={null}>
           <Scene active={active} reduced={reduced} />
